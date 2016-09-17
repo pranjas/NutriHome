@@ -12,8 +12,9 @@
  *
  */
 
-package com.example.pranay.nutrihome;
+package com.example.pranay.nutrihome.fatsecret;
 
+import com.example.pranay.nutrihome.AppLogger;
 import com.example.pranay.nutrihome.OAuth1_0.OAuthAuthorization;
 import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
 import com.example.pranay.nutrihome.OAuthCommon.OAuthManager;
@@ -26,6 +27,11 @@ import java.lang.reflect.Array;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channel;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +46,7 @@ public class OAuthRequest {
     private String requestType = "POST";
     private String url;
     private Map<String, String> parameters;
+    private int MAX_RESPONSE_CAP = 1024;
 
     private OAuthRequest(OAuthConstants.OAuthProto proto){
         switch (proto)
@@ -104,9 +111,12 @@ public class OAuthRequest {
     }
 
 
-    public BufferedReader sendRequest(boolean addBaseParams, boolean clearParams)
+    public String sendRequest(boolean addBaseParams, boolean clearParams)
     {
         try {
+            StringBuilder output = new StringBuilder();
+            ByteBuffer response = ByteBuffer.allocate(MAX_RESPONSE_CAP);
+
             HttpURLConnection connection = (HttpURLConnection)
                     (new URL(url).openConnection());
             connection.setRequestMethod(requestType);
@@ -116,7 +126,15 @@ public class OAuthRequest {
             if(clearParams)
                 parameters.clear();
 
-            return new BufferedReader(new InputStreamReader(connection.getInputStream()));
+            ReadableByteChannel channel = Channels.newChannel(connection.getInputStream());
+            int bytesRead = 0;
+            while( (bytesRead = channel.read(response)) > 0) {
+                response.flip();
+                output.append(new String(Arrays.copyOf(response.array(), bytesRead), "utf-8"));
+                response.clear();
+            }
+            channel.close();
+            return output.toString();
         } catch (IOException e) {
             AppLogger.getInstance().error(e.getMessage());
         }
@@ -191,5 +209,14 @@ public class OAuthRequest {
         toSend.append("=" + oauthSignature);
 
         return toSend.toString();
+    }
+
+    /*
+     * Clears the parameter map. The same can also be controlled
+     * from the sendrequest method above in the boolean parameter.
+     */
+    public void clear()
+    {
+        parameters.clear();
     }
 }

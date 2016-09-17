@@ -35,7 +35,7 @@ public class OAuthAuthorization extends OAuthManager {
 
     @Override
     public String generateToken(String content) {
-        return null;
+        return "";
     }
 
     @Override

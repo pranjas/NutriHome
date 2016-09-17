@@ -18,6 +18,13 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 
 import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
+import com.example.pranay.nutrihome.fatsecret.FatSecretCommons;
+import com.example.pranay.nutrihome.fatsecret.Food;
+import com.example.pranay.nutrihome.fatsecret.FoodConstants;
+import com.example.pranay.nutrihome.fatsecret.OAuthRequest;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -38,24 +45,15 @@ public class RequestReader extends AsyncTask
     protected Long doInBackground(String... params) {
         OAuthRequest request = null;
         try {
-            request = new OAuthRequest(
+            Food f = new Food(
                     appCompatActivity.getResources().getString(R.string.consumerKey)
                     ,appCompatActivity.getResources().getString(R.string.sharedKey),
                     "wtf", appCompatActivity.getResources().getString(R.string.api_url),
                     OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1);
-
-            request.addParameter("method","foods.search");
-            BufferedReader result = request.sendRequest(true, true);
-            while(result.read() > 0)
-            {
-                AppLogger.getInstance().debug(result.readLine());
+            Food.FoodInfo[] foods = f.search("high protein", 0);
+            for (int i = 0; i < foods.length; i++) {
+                AppLogger.getInstance().debug(foods[i].toString());
             }
-            result.close();
-        }catch (MalformedURLException malEx)
-        {
-            malEx.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
         }
