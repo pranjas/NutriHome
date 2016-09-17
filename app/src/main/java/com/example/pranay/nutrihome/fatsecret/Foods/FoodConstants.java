@@ -12,7 +12,7 @@
  *
  */
 
-package com.example.pranay.nutrihome.fatsecret;
+package com.example.pranay.nutrihome.fatsecret.Foods;
 
 /**
  * Created by pranay on 17/9/16.

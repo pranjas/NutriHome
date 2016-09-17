@@ -18,6 +18,7 @@ import android.util.Base64OutputStream;
 
 import com.example.pranay.nutrihome.AppLogger;
 import com.example.pranay.nutrihome.OAuthCommon.OAuthManager;
+import com.example.pranay.nutrihome.fatsecret.Profile.Profile;
 
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
@@ -35,7 +36,7 @@ public class OAuthAuthorization extends OAuthManager {
 
     @Override
     public String generateToken(String content) {
-        return "";
+        return null;
     }
 
     @Override

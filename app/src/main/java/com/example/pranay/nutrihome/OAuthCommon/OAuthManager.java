@@ -19,6 +19,7 @@ import android.provider.Settings;
 import android.util.Base64;
 
 import com.example.pranay.nutrihome.AppLogger;
+import com.example.pranay.nutrihome.fatsecret.Profile.Profile;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;

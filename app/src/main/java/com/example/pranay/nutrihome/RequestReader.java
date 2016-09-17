@@ -18,17 +18,9 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 
 import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
-import com.example.pranay.nutrihome.fatsecret.FatSecretCommons;
-import com.example.pranay.nutrihome.fatsecret.Food;
-import com.example.pranay.nutrihome.fatsecret.FoodConstants;
+import com.example.pranay.nutrihome.fatsecret.Foods.Food;
 import com.example.pranay.nutrihome.fatsecret.OAuthRequest;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.net.MalformedURLException;
+import com.example.pranay.nutrihome.fatsecret.Profile.Profile;
 
 /**
  * Created by pranay on 3/9/16.
@@ -45,15 +37,34 @@ public class RequestReader extends AsyncTask
     protected Long doInBackground(String... params) {
         OAuthRequest request = null;
         try {
+            Profile p = Profile.createProfile( "kumar.srivastava.pranay@gmail.com",
+                    appCompatActivity.getResources().getString(R.string.consumerKey)
+                    ,appCompatActivity.getResources().getString(R.string.sharedKey),
+                    "wtf", appCompatActivity.getResources().getString(R.string.api_url),
+                    OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1
+            );
+
+            /*
             Food f = new Food(
                     appCompatActivity.getResources().getString(R.string.consumerKey)
                     ,appCompatActivity.getResources().getString(R.string.sharedKey),
                     "wtf", appCompatActivity.getResources().getString(R.string.api_url),
                     OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1);
             Food.FoodInfo[] foods = f.search("high protein", 0);
-            for (int i = 0; i < foods.length; i++) {
+            for (int i = 0; foods != null && i < foods.length; i++) {
                 AppLogger.getInstance().debug(foods[i].toString());
             }
+            */
+            if (p == null)
+                p = Profile.getProfileFromServer("kumar.srivastava.pranay@gmail.com",
+                        appCompatActivity.getResources().getString(R.string.consumerKey)
+                        ,appCompatActivity.getResources().getString(R.string.sharedKey),
+                        "wtf", appCompatActivity.getResources().getString(R.string.api_url),
+                        OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1);
+
+            if(p != null)
+                AppLogger.getInstance().debug(p.toString());
+
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -12,16 +12,17 @@
  *
  */
 
-package com.example.pranay.nutrihome.fatsecret;
+package com.example.pranay.nutrihome.fatsecret.Foods;
 
 import com.example.pranay.nutrihome.AppLogger;
 import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
+import com.example.pranay.nutrihome.fatsecret.FatSecretCommons;
+import com.example.pranay.nutrihome.fatsecret.OAuthRequest;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -50,6 +51,7 @@ public class Food {
         if (request.getoAuthManager().getoAuthToken().length() > 0)
             request.addParameter(FatSecretCommons.OAUTH_TOKEN,
                     request.getoAuthManager().getoAuthToken());
+
         String jsonOutput = request.sendRequest(true, true);
         try {
             JSONObject foods = new JSONObject(jsonOutput);
@@ -96,10 +98,10 @@ public class Food {
             this.food_name = food_name;
             this.food_type = food_type;
             this.food_id = food_id;
-            setCalories();
+            setDosageandNutritionalInformation();
         }
 
-        private void setCalories()
+        private void setDosageandNutritionalInformation()
         {
             StringTokenizer st = new StringTokenizer(food_description, "|");
             while (st.hasMoreElements()) {
