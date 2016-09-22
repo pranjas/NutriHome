@@ -16,33 +16,35 @@ package com.example.pranay.nutrihome.fatsecret.Foods;
 
 import com.example.pranay.nutrihome.AppLogger;
 import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
-import com.example.pranay.nutrihome.OAuthCommon.OAuthManager;
-import com.example.pranay.nutrihome.fatsecret.FatSecretCommons;
-import com.example.pranay.nutrihome.fatsecret.OAuthRequest;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.ArrayList;
-import java.util.StringTokenizer;
-
 /**
- * Created by pranay on 17/9/16.
+ * Created by pranay on 18/9/16.
  */
-public class Food {
+public class AddFavoriteMethod extends CommonMethod<FoodInfo> {
 
-    public static FoodInfo[] search(
-            OAuthConstants.OAuthProto proto,
-            MethodParam...params) {
+    public AddFavoriteMethod()
+    {
+        super();
+    }
+    public AddFavoriteMethod(OAuthConstants.OAuthProto proto){
+        super(proto);
+    }
 
-        SearchMethod searchMethod = new SearchMethod(proto);
-        searchMethod.addParameter(FatSecretCommons.METHOD, FoodConstants.METHOD_SEARCH);
-        searchMethod.addParameter(FatSecretCommons.FORMAT, FatSecretCommons.FORMAT_JSON);
-        for(MethodParam p: params){
-            searchMethod.addParameter(p.name, p.value);
+    @Override
+    public FoodInfo[] parse(String jsonInput) {
+        try {
+            JSONObject successObject = new JSONObject(jsonInput);
+
+        } catch (JSONException e) {
+            AppLogger.getInstance().error(e.getMessage());
         }
-        String jsonOutput = searchMethod.sendRequest(params);
-        return searchMethod.parse(jsonOutput);
+        return null;
+    }
+
+    @Override
+    public String sendRequest(MethodParam... params) {
+        return null;
     }
 }

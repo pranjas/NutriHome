@@ -24,10 +24,14 @@ public interface OAuthConstants {
             OAUTH_NONCE = "oauth_nonce",
             OAUTH_VERSION = "oauth_version",
             OAUTH_SIGNATURE = "oauth_signature",
-            OAUTH_HMAC_SIGNATURE_METHOD = "HMAC-SHA1";
+            OAUTH_HMAC_SIGNATURE_METHOD = "HMAC-SHA1",
+            OAUTH_AUTH_TOKEN = "oauth_token",
+            OAUTH_ACCESS_KEY = "oauth_access_key",
+            OAUTH_SHARED_KEY = "oauth_shared_key",
+            OAUTH_URL = "oauth_url";
 
     enum OAuthProto {
         O_AUTH_PROTO_VER1,
         O_AUTH_PROTO_VER2
-    };
+    }
 }

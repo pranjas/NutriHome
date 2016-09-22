@@ -26,7 +26,7 @@ public interface FoodConstants {
             METHOD_GET_MOST_EATEN = "foods.get_most_eaten",
             METHOD_GET_RECENTLY_EATEN = "foods.get_recently_eaten";
 
-    String SEARCH_EXPRESSION = "search_expression";
+    String  SEARCH_EXPRESSION = "search_expression";
 
     /*
      * One Foods JSON object has a JSONArray of food.
@@ -35,4 +35,5 @@ public interface FoodConstants {
      */
     String JSON_OBJECT_NAME = "foods";
     String JSON_ARRAY_NAME = "food";
+    String JSON_OBJECT_SUCCESS = "success";
 }

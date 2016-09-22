@@ -41,7 +41,7 @@ public class OAuthAuthorization extends OAuthManager {
 
     @Override
     public String generateSignature(String content) {
-        String key = oAuthSharedKey + "&" + oAuthToken;
+        String key = oAuthSharedKey + "&" + oAuthAccessKey;
         String signatureMethod = getoAuthSignatureMethod();
         SecretKeySpec spec = new SecretKeySpec(key.getBytes(), signatureMethod);
         String signature = "";

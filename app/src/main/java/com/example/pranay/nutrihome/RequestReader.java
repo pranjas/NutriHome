@@ -18,9 +18,17 @@ import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 
 import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
+import com.example.pranay.nutrihome.fatsecret.FatSecretCommons;
 import com.example.pranay.nutrihome.fatsecret.Foods.Food;
+import com.example.pranay.nutrihome.fatsecret.Foods.FoodConstants;
+import com.example.pranay.nutrihome.fatsecret.Foods.FoodInfo;
+import com.example.pranay.nutrihome.fatsecret.Foods.MethodParam;
+import com.example.pranay.nutrihome.fatsecret.Method;
 import com.example.pranay.nutrihome.fatsecret.OAuthRequest;
 import com.example.pranay.nutrihome.fatsecret.Profile.Profile;
+import com.example.pranay.nutrihome.fatsecret.Profile.ProfileConstants;
+
+import java.util.ArrayList;
 
 /**
  * Created by pranay on 3/9/16.
@@ -35,7 +43,6 @@ public class RequestReader extends AsyncTask
     }
     @Override
     protected Long doInBackground(String... params) {
-        OAuthRequest request = null;
         try {
             Profile p = Profile.createProfile( "kumar.srivastava.pranay@gmail.com",
                     appCompatActivity.getResources().getString(R.string.consumerKey)
@@ -44,17 +51,6 @@ public class RequestReader extends AsyncTask
                     OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1
             );
 
-            /*
-            Food f = new Food(
-                    appCompatActivity.getResources().getString(R.string.consumerKey)
-                    ,appCompatActivity.getResources().getString(R.string.sharedKey),
-                    "wtf", appCompatActivity.getResources().getString(R.string.api_url),
-                    OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1);
-            Food.FoodInfo[] foods = f.search("high protein", 0);
-            for (int i = 0; foods != null && i < foods.length; i++) {
-                AppLogger.getInstance().debug(foods[i].toString());
-            }
-            */
             if (p == null)
                 p = Profile.getProfileFromServer("kumar.srivastava.pranay@gmail.com",
                         appCompatActivity.getResources().getString(R.string.consumerKey)
@@ -62,12 +58,44 @@ public class RequestReader extends AsyncTask
                         "wtf", appCompatActivity.getResources().getString(R.string.api_url),
                         OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1);
 
-            if(p != null)
-                AppLogger.getInstance().debug(p.toString());
+            ArrayList<MethodParam> foodParams = new ArrayList<MethodParam>();
+            foodParams.add(new MethodParam(OAuthConstants.OAUTH_ACCESS_KEY, p.getoAuthSecret()));
+            foodParams.add(new MethodParam(OAuthConstants.OAUTH_AUTH_TOKEN,  p.getoAuthToken()));
+            foodParams.addAll(getFixedResourceParams());
 
+            FoodInfo[] foods = Food.search(OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1,
+                    foodParams.toArray(new MethodParam[0]));
+
+            for (int i = 0; foods != null && i < foods.length; i++) {
+                AppLogger.getInstance().debug(foods[i].toString());
+            }
+
+            if(p != null) {
+                if (!p.getUserInformation())
+                    AppLogger.getInstance().debug("User information not found");
+                AppLogger.getInstance().debug(p.toString());
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
         return 0L;
+    }
+
+    private ArrayList<MethodParam> getFixedResourceParams()
+    {
+        ArrayList<MethodParam> result = new ArrayList<MethodParam>();
+
+        result.add(new MethodParam(OAuthConstants.OAUTH_CONSUMER_KEY,
+                appCompatActivity.getResources().getString(R.string.consumerKey)));
+
+        result.add(new MethodParam(OAuthConstants.OAUTH_SHARED_KEY,
+                appCompatActivity.getResources().getString(R.string.sharedKey)));
+
+        result.add(new MethodParam(OAuthConstants.OAUTH_NONCE, "wtf"));
+
+        result.add(new MethodParam(OAuthConstants.OAUTH_URL,
+                appCompatActivity.getResources().getString(R.string.api_url)));
+
+        return result;
     }
 }

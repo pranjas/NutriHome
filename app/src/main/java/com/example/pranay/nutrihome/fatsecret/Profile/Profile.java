@@ -33,7 +33,56 @@ public class Profile {
 
     private String userId;
 
+    private String  weightMeasure,
+                    heightMeasure,
+                    lastWeightKG,
+                    lastWeightDate,
+                    lastWeightComment,
+                    goalWeightKG,
+                    heightInCM;
 
+    private static OAuthRequest request;
+
+
+    public boolean getUserInformation()
+    {
+        request.modifyParameter(FatSecretCommons.METHOD, ProfileConstants.METHOD_PROFILE_GET);
+        request.modifyParameter(FatSecretCommons.FORMAT, FatSecretCommons.FORMAT_JSON);
+        request.getoAuthManager().setoAuthAccessKey(oAuthSecret);
+        request.getoAuthManager().setoAuthToken(oAuthToken);
+        JSONObject result = null;
+        try {
+            result = new JSONObject(request.sendRequest(true, true));
+
+            JSONObject profile = result.getJSONObject(ProfileConstants.JSON_OBJECT_NAME);
+
+            weightMeasure = profile.getString(ProfileConstants.JSON_KEY_WEIGHT_MEASURE).
+                                                        toLowerCase();
+
+            heightMeasure = profile.getString(ProfileConstants.JSON_KEY_HEIGHT_MEASURE).
+                                                        toLowerCase();
+
+            lastWeightKG = profile.getString(ProfileConstants.JSON_KEY_LAST_WEIGHT_KG).
+                                                        toLowerCase();
+
+            lastWeightDate = profile.getString(ProfileConstants.JSON_KEY_LAST_WEIGHT_DATE_INT).
+                                                        toLowerCase();
+
+            lastWeightComment = profile.optString(ProfileConstants.JSON_KEY_LAST_WEIGHT_COMMENT).
+                                                        toLowerCase();
+
+            goalWeightKG = profile.getString(ProfileConstants.JSON_KEY_GOAL_WEIGHT_KG).
+                                                        toLowerCase();
+
+            heightInCM = profile.getString(ProfileConstants.JSON_KEY_HEIGHT_CM).toLowerCase();
+
+            return true;
+
+        } catch (JSONException e) {
+            AppLogger.getInstance().error(e.getMessage());
+        }
+        return false;
+    }
 
     private static Profile getOrCreate(String method,
                                 String userId,
@@ -42,10 +91,14 @@ public class Profile {
                                 OAuthConstants.OAuthProto proto
                                 )
     {
-        OAuthRequest request = new OAuthRequest(consumerKey,sharedKey, nonce, url, proto);
+        if(request == null)
+            request = new OAuthRequest(consumerKey,sharedKey, nonce, url, proto);
+        request.clear();
+
         request.addParameter(FatSecretCommons.FORMAT, FatSecretCommons.FORMAT_JSON);
         request.addParameter(ProfileConstants.USER_ID, userId);
         request.addParameter(FatSecretCommons.METHOD, method);
+
         JSONObject result = null;
         try {
             result = new JSONObject(request.sendRequest(true, true));
@@ -78,6 +131,7 @@ public class Profile {
         return getOrCreate(ProfileConstants.METHOD_PROFILE_GET_AUTH, userId,
                                 consumerKey, sharedKey, nonce, url,proto);
     }
+
     public static Profile createProfile(String userId,
                                         String consumerKey, String sharedKey,
                                         String nonce, String url,
@@ -116,6 +170,14 @@ public class Profile {
         sb.append(ProfileConstants.AUTH_SECRET +": " + oAuthSecret +"\n");
         sb.append(ProfileConstants.AUTH_TOKEN + ": " + oAuthToken + "\n");
         sb.append(ProfileConstants.USER_ID + ": " + userId + "\n");
+
+        sb.append("Weight Measure: " + weightMeasure +"\n");
+        sb.append("Height Measure: " + heightMeasure +"\n");
+        sb.append("Last Weight in Kg: " + lastWeightKG +"\n");
+        sb.append("Last Weight Date: " + lastWeightDate +"\n");
+        sb.append("Last Weight Comment: " + lastWeightComment + "\n");
+        sb.append("Goal Weight: " + goalWeightKG + "\n");
+        sb.append("Height in cm: " + heightInCM +"\n");
 
         return sb.toString();
     }

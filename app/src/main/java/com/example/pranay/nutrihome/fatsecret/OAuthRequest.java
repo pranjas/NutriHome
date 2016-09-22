@@ -48,7 +48,7 @@ public class OAuthRequest {
     private Map<String, String> parameters;
     private int MAX_RESPONSE_CAP = 1024;
 
-    private OAuthRequest(OAuthConstants.OAuthProto proto){
+    public OAuthRequest(OAuthConstants.OAuthProto proto){
         switch (proto)
         {
             case O_AUTH_PROTO_VER1:
@@ -57,6 +57,20 @@ public class OAuthRequest {
 
             default:
                 oAuthManager = null;
+        }
+        if (oAuthManager != null) {
+            parameters = new HashMap<String, String>();
+        }
+    }
+
+    /*
+     * Default with 1.0 Protocol
+     */
+    public OAuthRequest()
+    {
+        this(OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1);
+        if (oAuthManager != null) {
+            parameters = new HashMap<String, String>();
         }
     }
 
@@ -88,7 +102,35 @@ public class OAuthRequest {
 
     public void addParameter(String param, String value)
     {
+        if(param.equals(OAuthConstants.OAUTH_AUTH_TOKEN))
+            getoAuthManager().setoAuthToken(value);
+
+        else if (param.equals(OAuthConstants.OAUTH_ACCESS_KEY))
+            getoAuthManager().setoAuthAccessKey(value);
+
+        else if (param.equals(OAuthConstants.OAUTH_CONSUMER_KEY))
+            getoAuthManager().setoauthConsumerKey(value);
+
+        else if(param.equals(OAuthConstants.OAUTH_SHARED_KEY))
+            getoAuthManager().setoAuthSharedKey(value);
+
+        else if(param.equals(OAuthConstants.OAUTH_NONCE))
+            this.nonce = value;
+        else  if (param.equals(OAuthConstants.OAUTH_URL))
+            this.url = value;
+        else
+            parameters.put(param, value);
+    }
+
+    public void modifyParameter(String param, String value)
+    {
+        parameters.remove(param);
         parameters.put(param, value);
+    }
+
+    public void removeParameter(String param)
+    {
+        parameters.remove(param);
     }
 
     public void addBaseParameters()
@@ -108,6 +150,9 @@ public class OAuthRequest {
                 oAuthManager.getoAuthTimestamp());
 
         parameters.put(OAuthConstants.OAUTH_VERSION, "1.0");
+
+        if (getoAuthManager().getoAuthToken().length() > 0)
+            parameters.put(OAuthConstants.OAUTH_AUTH_TOKEN, getoAuthManager().getoAuthToken());
     }
 
 

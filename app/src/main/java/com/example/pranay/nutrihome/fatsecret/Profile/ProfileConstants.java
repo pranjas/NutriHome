@@ -27,5 +27,13 @@ public interface ProfileConstants {
             METHOD_PROFILE_GET = "profile.get",
             METHOD_PROFILE_GET_AUTH = "profile.get_auth";
 
+    String  JSON_KEY_WEIGHT_MEASURE = "weight_measure",
+            JSON_KEY_HEIGHT_MEASURE = "height_measure",
+            JSON_KEY_LAST_WEIGHT_KG = "last_weight_kg",
+            JSON_KEY_LAST_WEIGHT_DATE_INT = "last_weight_date_int",
+            JSON_KEY_GOAL_WEIGHT_KG = "goal_weight_kg",
+            JSON_KEY_LAST_WEIGHT_COMMENT = "last_weight_comment",
+            JSON_KEY_HEIGHT_CM = "height_cm";
+
     String USER_ID = "user_id";
 }
