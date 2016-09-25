@@ -12,30 +12,12 @@
  *
  */
 
-apply plugin: 'com.android.application'
+package com.example.pranay.nutrihome;
 
-android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.2"
-
-    defaultConfig {
-        applicationId "com.example.pranay.nutrihome"
-        minSdkVersion 15
-        targetSdkVersion 24
-        versionCode 1
-        versionName "1.0"
-    }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-}
-
-dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:24.2.0'
-    compile 'com.android.support:design:24.2.0'
+/**
+ * Created by pranay on 24/9/16.
+ */
+public interface IntentURI {
+    String SEARCH_FOOD = "search_food";
+    String SEARCH_NO_RESULT="__NO_SEARCH_RESULT__";
 }

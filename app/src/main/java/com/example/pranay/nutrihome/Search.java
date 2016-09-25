@@ -14,14 +14,17 @@
 
 package com.example.pranay.nutrihome;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 public class Search extends AppCompatActivity{
 
+    private  String lastSearch;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,11 +36,49 @@ public class Search extends AppCompatActivity{
             @Override
             public void onClick(View v) {
                 EditText txtSearch = (EditText)findViewById(R.id.txtSearch);
-                if (txtSearch.getText().length() != 0)
-                new RequestReader(Search.this).
-                            execute(txtSearch.getText().toString());
+                if (txtSearch.getText().length() != 0) {
+                    Intent searchIntent = new Intent(getApplicationContext(),
+                            FoodSearchResult.class);
+                    searchIntent.putExtra(IntentURI.SEARCH_FOOD, txtSearch.getText().toString());
+                    startActivity(searchIntent);
+                    lastSearch = txtSearch.getText().toString();
+                }
             }
         });
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedInstance)
+    {
+        super.onSaveInstanceState(savedInstance);
+        EditText txtSearch = (EditText)findViewById(R.id.txtSearch);
+        savedInstance.putString(IntentURI.SEARCH_FOOD, txtSearch.getText().toString());
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstance)
+    {
+        super.onRestoreInstanceState(savedInstance);
+        if (savedInstance == null)
+            return;
+        String searchText = savedInstance.getString(IntentURI.SEARCH_FOOD, "");
+        EditText txtSearch = (EditText)findViewById(R.id.txtSearch);
+        txtSearch.setText(searchText);
+    }
+
+
+
+    public void onResume()
+    {
+        super.onResume();
+        Bundle fromSearchResult = getIntent().getExtras();
+        if (fromSearchResult != null) {
+            String forToast ="";
+            forToast = fromSearchResult.getString(IntentURI.SEARCH_NO_RESULT, "");
+            if (forToast.length() != 0)
+                Toast.makeText(getApplicationContext(), forToast.toString() + " " +
+                lastSearch, Toast.LENGTH_LONG).show();
+        }
     }
 
     private void getSearchResults()

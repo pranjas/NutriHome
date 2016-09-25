@@ -14,6 +14,7 @@
 
 package com.example.pranay.nutrihome;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 
@@ -41,6 +42,11 @@ public class RequestReader extends AsyncTask
     {
         this.appCompatActivity = appCompatActivity;
     }
+
+    @Override
+    protected void onPostExecute(Long result)
+    {
+    }
     @Override
     protected Long doInBackground(String... params) {
         try {
@@ -58,9 +64,14 @@ public class RequestReader extends AsyncTask
                         "wtf", appCompatActivity.getResources().getString(R.string.api_url),
                         OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1);
 
+            /*
+             * NEED TO ADD SEARCH_EXPRESSION and any other
+             * parameters. This would be done in PRE-EXECUTE?
+             */
             ArrayList<MethodParam> foodParams = new ArrayList<MethodParam>();
             foodParams.add(new MethodParam(OAuthConstants.OAUTH_ACCESS_KEY, p.getoAuthSecret()));
             foodParams.add(new MethodParam(OAuthConstants.OAUTH_AUTH_TOKEN,  p.getoAuthToken()));
+            foodParams.add(new MethodParam(FoodConstants.SEARCH_EXPRESSION, params[0]));
             foodParams.addAll(getFixedResourceParams());
 
             FoodInfo[] foods = Food.search(OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1,

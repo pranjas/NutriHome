@@ -167,6 +167,7 @@ public class OAuthRequest {
             connection.setRequestMethod(requestType);
             connection.setRequestProperty("Content-Type","application/x-www-form-urlencoded");
             connection.getOutputStream().write(generateFormDataToSend(addBaseParams).getBytes());
+            connection.getOutputStream().close();
 
             if(clearParams)
                 parameters.clear();

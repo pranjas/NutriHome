@@ -18,11 +18,13 @@ import com.example.pranay.nutrihome.fatsecret.Foods.Food;
 import com.example.pranay.nutrihome.fatsecret.Foods.FoodInfo;
 import com.example.pranay.nutrihome.fatsecret.Foods.MethodParam;
 
+import java.util.ArrayList;
+
 /**
  * Created by pranay on 18/9/16.
  */
 public interface Method <T> {
 
-    T[] parse(String jsonInput);
+    ArrayList<T> parse(String jsonInput);
     String sendRequest(MethodParam...params);
 }

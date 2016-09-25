@@ -32,16 +32,13 @@ import java.util.StringTokenizer;
  */
 public class Food {
 
-    public static FoodInfo[] search(
+    public static ArrayList<FoodInfo> search(
             OAuthConstants.OAuthProto proto,
             MethodParam...params) {
 
         SearchMethod searchMethod = new SearchMethod(proto);
         searchMethod.addParameter(FatSecretCommons.METHOD, FoodConstants.METHOD_SEARCH);
         searchMethod.addParameter(FatSecretCommons.FORMAT, FatSecretCommons.FORMAT_JSON);
-        for(MethodParam p: params){
-            searchMethod.addParameter(p.name, p.value);
-        }
         String jsonOutput = searchMethod.sendRequest(params);
         return searchMethod.parse(jsonOutput);
     }

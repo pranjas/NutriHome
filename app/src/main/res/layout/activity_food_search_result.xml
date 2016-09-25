@@ -13,10 +13,22 @@
   ~
   -->
 
-<resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
-    <color name="colorBackground">#6ab244</color>
-    <color name="textColorWhite">#FFFFFF</color>
-</resources>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_small_vmargin"
+    android:paddingLeft="@dimen/activity_small_hmargin"
+    android:paddingRight="@dimen/activity_small_hmargin"
+    android:paddingTop="@dimen/activity_small_vmargin"
+    android:orientation="vertical"
+    tools:context="com.example.pranay.nutrihome.FoodSearchResult"
+    >
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/listSearchFood"
+        >
+    </ListView>
+</LinearLayout>

@@ -14,6 +14,10 @@
 
 package com.example.pranay.nutrihome.fatsecret.Foods;
 
+import android.util.Pair;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 /**
@@ -27,7 +31,11 @@ public class FoodInfo {
             food_type,
             food_url,
             food_description,
-            brand_name;
+            brand_name,
+            measurement;
+
+    protected FoodInfoNutrient[] sortedNutrients;
+    protected int nutrientCount;
 
     public FoodInfo(String food_id, String food_name, String food_type,
                     String brand_name, String food_description, String food_url)
@@ -39,6 +47,64 @@ public class FoodInfo {
         this.food_type = food_type;
         this.food_id = food_id;
         setDosageandNutritionalInformation();
+        sortNutrients();
+    }
+
+    private void sortNutrients()
+    {
+        String [] nutrientsCopy;
+        FoodInfoNutrient[] enumCopy = FoodInfoNutrient.values();
+        ArrayList<FoodInfoNutrient> nonNullNutrients = new ArrayList<>();
+
+        /*
+         * First find out how many nutrients
+         * we've as non-null returned.
+         */
+        for (int i = 0; i < enumCopy.length ; i++) {
+            if(nutrients[enumCopy[i].ordinal()] != null)
+                nonNullNutrients.add(enumCopy[i]);
+        }
+        nutrientsCopy = new String[nonNullNutrients.size()];
+        /*
+         * Only copy the non-null Nutrients in nutrients
+         * copy array.
+         */
+        for (int i = 0; i <nutrientsCopy.length ; i++) {
+            nutrientsCopy[i] = nutrients[nonNullNutrients.get(i).ordinal()];
+        }
+
+        sortedNutrients = nonNullNutrients.toArray(new FoodInfoNutrient[0]);
+        enumCopy = sortedNutrients;
+        /*
+         * Bubble sort the mappings first.
+         */
+        for(int i = 0;i < nutrientsCopy.length; i++){
+            int lower_index = i;
+            for (int j = i + 1 ; j < nutrientsCopy.length ; j++) {
+                if (nutrientsCopy[lower_index].compareTo(nutrientsCopy[j]) > 0)
+                    lower_index = j;
+            }
+            String tmp = nutrientsCopy[i];
+            FoodInfoNutrient tmpEnum = enumCopy[i];
+            enumCopy[i] = enumCopy[lower_index];
+            nutrientsCopy[i] = nutrientsCopy[lower_index];
+            nutrientsCopy[lower_index] = tmp;
+            enumCopy[lower_index] = tmpEnum;
+        }
+        nutrientCount = sortedNutrients.length;
+    }
+
+    public int getNutrientCount()
+    {
+        return  nutrientCount;
+    }
+
+    public Pair<String, String> getSortedNutrientAt(int pos){
+        if (pos > 0 && pos < sortedNutrients.length)
+            return new Pair<>(sortedNutrients[pos].name(),
+                                nutrients[sortedNutrients[pos].ordinal()]);
+
+        return  null;
     }
 
     private void setDosageandNutritionalInformation()
@@ -47,83 +113,59 @@ public class FoodInfo {
         while (st.hasMoreElements()) {
             String next = st.nextElement().toString();
 
-            if(next.toLowerCase().contains("fat"))
-                fat = next.split(":")[1].trim();
+            for(FoodInfoNutrient nutrient: FoodInfoNutrient.values()) {
+                if (next.toLowerCase().contains(FoodInfoNutrient.CALORIES.name().toLowerCase())) {
 
-            else if (next.toLowerCase().contains("carbs"))
-                carbohydrates = next.split(":")[1].trim();
+                    StringTokenizer forMeasurement = new StringTokenizer(next, "-");
+                    while (forMeasurement.hasMoreElements()) {
+                        String val = forMeasurement.nextElement().toString();
+                        if (val.toLowerCase().contains(FoodInfoNutrient.CALORIES.name().toLowerCase()))
+                            nutrients[FoodInfoNutrient.CALORIES.ordinal()] = val.split(":")[1].trim();
+                        else
+                            measurement = val.trim();
+                    }
+                    break;
+                }
+                else {
 
-            else if (next.toLowerCase().contains("protein"))
-                protein = next.split(":")[1].trim();
-
-            else if (next.toLowerCase().contains("saturated_fat"))
-                saturated_fat = next.split(":")[1].trim();
-
-            else if (next.toLowerCase().contains("polyunsaturated_fat"))
-                polyunsaturated_fat = next.split(":")[1].trim();
-
-            else if (next.toLowerCase().contains("monounsaturated_fat"))
-                monounsaturated_fat = next.split(":")[1].trim();
-
-            else if (next.toLowerCase().contains("trans_fat"))
-                trans_fat = next.split(":")[1].trim();
-
-            else if (next.toLowerCase().contains("cholestrol"))
-                cholestrol = next.split(":")[1].trim();
-
-            else if (next.toLowerCase().contains("sodium"))
-                sodium = next.split(":")[1].trim();
-
-            else if (next.toLowerCase().contains("potassium"))
-                potassium = next.split(":")[1].trim();
-
-            else if (next.toLowerCase().contains("sugar"))
-                sugar = next.split(":")[1].trim();
-
-            else if (next.toLowerCase().contains("vitamin_a"))
-                vitamin_a = next.split(":")[1].trim();
-
-            else if (next.toLowerCase().contains("vitamin_c"))
-                vitamin_c = next.split(":")[1].trim();
-
-            else if (next.toLowerCase().contains("calcium"))
-                calcium = next.split(":")[1].trim();
-
-            else if (next.toLowerCase().contains("iron"))
-                iron = next.split(":")[1].trim();
-
-            else if (next.toLowerCase().contains("calories")) {
-
-                StringTokenizer forMeasurement = new StringTokenizer(next,"-");
-                while (forMeasurement.hasMoreElements()) {
-                    String val = forMeasurement.nextElement().toString();
-                    if (val.toLowerCase().contains("calories"))
-                        calories = val.split(":")[1].trim();
-                    else
-                        measurement = val.trim();
+                    if(next.toLowerCase().contains(nutrient.name().toLowerCase())) {
+                        nutrients[nutrient.ordinal()] = next.split(":")[1].trim();
+                        break;
+                    }
                 }
             }
         }
     }
-    protected String
-            protein,
-            carbohydrates,
-            calories,
-            fat,
-            saturated_fat,
-            polyunsaturated_fat,
-            monounsaturated_fat,
-            trans_fat,
-            cholestrol,
-            sodium,
-            potassium,
-            sugar,
-            vitamin_a,
-            vitamin_c,
-            calcium,
-            iron;
 
-    protected String measurement;
+
+    public enum FoodInfoNutrient {
+        PROTEIN,
+        CARBS,
+        CALORIES,
+        FAT,
+        SATURATED_FAT,
+        POLYUNSATURATED_FAT,
+        MONOUNSATURATED_FAT,
+        TRANS_FAT,
+        CHOLESTROL,
+        SODIUM,
+        POTTASIUM,
+        SUGAR,
+        VITAMIN_A,
+        VITAMIN_C,
+        CALCIUM,
+        IRON
+    }
+
+    public static final int MAX_NUTRIENT_COUNT = FoodInfoNutrient.values().length;
+
+    protected String[] nutrients = new String[MAX_NUTRIENT_COUNT];
+
+    public String getNutrient(FoodInfoNutrient nutrient)
+    {
+        return nutrients[nutrient.ordinal()];
+    }
+
 
     public boolean isGeneric()
     {
@@ -143,13 +185,12 @@ public class FoodInfo {
         sb.append("Type: " + food_type +"\n");
         sb.append("URL: " + food_url + "\n");
         sb.append("Description: " + food_description + "\n");
-        sb.append("Carbs: "+ carbohydrates + "\n");
-        sb.append("Protein: " + protein + "\n");
-        sb.append("Fat: " + fat + "\n");
+        sb.append("Carbs: "+ getNutrient(FoodInfoNutrient.CARBS) + "\n");
+        sb.append("Protein: " + getNutrient(FoodInfoNutrient.PROTEIN) + "\n");
+        sb.append("Fat: " + getNutrient(FoodInfoNutrient.FAT) + "\n");
         sb.append("Measurement: " + measurement + "\n");
         sb.append("Brand: " + brand_name + "\n===\n");
 
         return sb.toString();
     }
-
 }

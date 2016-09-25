@@ -38,10 +38,6 @@ public class SearchMethod extends CommonMethod<FoodInfo> {
 
     @Override
     public String sendRequest(MethodParam...params) {
-        /*
-         * TODO:
-         * Handle OAUTH_TOKEN and OAUTH_ACCESS key here.
-         */
         for(MethodParam p : params) {
             request.addParameter(p.name, p.value);
         }
@@ -49,7 +45,7 @@ public class SearchMethod extends CommonMethod<FoodInfo> {
     }
 
     @Override
-    public FoodInfo[] parse(String jsonInput) {
+    public ArrayList<FoodInfo> parse(String jsonInput) {
         try {
             JSONObject foods = new JSONObject(jsonInput);
             JSONArray allFoods = foods.getJSONObject(FoodConstants.JSON_OBJECT_NAME)
@@ -68,7 +64,7 @@ public class SearchMethod extends CommonMethod<FoodInfo> {
                         jsonItem.getString("food_url"));
                 items.add(fInfo);
             }
-            return items.toArray(new FoodInfo[0]);
+            return items;
 
         } catch (JSONException e) {
             AppLogger.getInstance().error(e.getMessage());
