@@ -19,6 +19,8 @@ import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+
 /**
  * Created by pranay on 18/9/16.
  */
@@ -33,7 +35,7 @@ public class AddFavoriteMethod extends CommonMethod<FoodInfo> {
     }
 
     @Override
-    public FoodInfo[] parse(String jsonInput) {
+    public ArrayList<FoodInfo> parse(String jsonInput) {
         try {
             JSONObject successObject = new JSONObject(jsonInput);
 

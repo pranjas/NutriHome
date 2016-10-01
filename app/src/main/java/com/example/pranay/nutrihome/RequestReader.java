@@ -74,11 +74,11 @@ public class RequestReader extends AsyncTask
             foodParams.add(new MethodParam(FoodConstants.SEARCH_EXPRESSION, params[0]));
             foodParams.addAll(getFixedResourceParams());
 
-            FoodInfo[] foods = Food.search(OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1,
+            ArrayList<FoodInfo> foods = Food.search(OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1,
                     foodParams.toArray(new MethodParam[0]));
 
-            for (int i = 0; foods != null && i < foods.length; i++) {
-                AppLogger.getInstance().debug(foods[i].toString());
+            for (int i = 0; foods != null && i < foods.size(); i++) {
+                AppLogger.getInstance().debug(foods.get(i).toString());
             }
 
             if(p != null) {

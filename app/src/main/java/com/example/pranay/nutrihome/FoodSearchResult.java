@@ -17,6 +17,10 @@ package com.example.pranay.nutrihome;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.os.AsyncTask;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -26,6 +30,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
 import android.widget.TableLayout;
@@ -43,6 +48,7 @@ import org.w3c.dom.Text;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class FoodSearchResult extends AppCompatActivity {
 
@@ -81,7 +87,7 @@ public class FoodSearchResult extends AppCompatActivity {
             }
             ListView listView = (ListView)findViewById(R.id.listSearchFood);
 
-            if (listView.getAdapter().getCount() == 0)
+            if (listView.getAdapter() == null || listView.getAdapter().getCount() == 0)
                 listView.setAdapter(new FoodSearchAdapter(FoodSearchResult.this,
                         R.layout.search_list, result));
             else {
@@ -199,6 +205,19 @@ public class FoodSearchResult extends AppCompatActivity {
                 searchView = searchLayout.inflate(R.layout.search_list, null);
             }
 
+            LinearLayout graphLayout = (LinearLayout)searchView.findViewById(R.id.graphLayout);
+            if (graphLayout != null)
+            {
+                Pair<Integer, Integer> forPie[] = new Pair[3];
+                for (int i = 0; i < forPie.length; i++) {
+                    forPie[i] = new Pair<Integer, Integer>(
+                            new Random().nextInt(), Color.RED);
+                }
+                PieGraph pieGraph = new PieGraph(graphLayout.getContext(), forPie,
+                        graphLayout.getWidth(), graphLayout.getHeight());
+                graphLayout.addView(pieGraph);
+            }
+
             TextView brandName = (TextView)searchView.findViewById(R.id.topSearchBrand);
             TextView name = (TextView)searchView.findViewById(R.id.topSearchName);
             TextView topValue1 = (TextView)searchView.findViewById(R.id.topSearchVal);
@@ -228,6 +247,43 @@ public class FoodSearchResult extends AppCompatActivity {
                 topValue2.setVisibility(View.GONE);
 
             return searchView;
+        }
+    }
+
+    private class PieGraph extends View
+    {
+        /*
+         * Value,Color pair.
+         */
+        private Pair<Integer, Integer> [] colorValuePairs;
+
+        public PieGraph(Context context, Pair<Integer, Integer> [] pairs, int width, int height)
+        {
+            super(context);
+            this.colorValuePairs = pairs;
+        }
+
+        public void onDraw(Canvas canvas)
+        {
+            int width = getWidth() - getPaddingLeft() - getPaddingRight();
+            int height = getHeight() - getPaddingLeft() - getPaddingBottom();
+            int left = getPaddingLeft();
+            int maxSum = 0;
+            float startAngle = 0.0f;
+
+            Paint paint = new Paint();
+            RectF canvasSize = new RectF(left, left, width, height);
+
+            for(Pair<Integer, Integer> p : colorValuePairs) {
+                maxSum +=p.first.intValue();
+            }
+
+            for(Pair<Integer, Integer> p: colorValuePairs) {
+                paint.setColor(p.second);
+                float sweep = (p.first * 360.0f) / maxSum;
+                canvas.drawArc(canvasSize, startAngle, sweep,true, paint);
+                startAngle += sweep;
+            }
         }
     }
 }
