@@ -21,11 +21,15 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.icu.util.Measure;
 import android.os.AsyncTask;
+import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.LayoutDirection;
 import android.util.Pair;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -195,6 +199,43 @@ public class FoodSearchResult extends AppCompatActivity {
             super(context, resource, textViewResourceId, objects);
         }
 
+        private String addNewlineAt(String str, int pos)
+        {
+            if (pos > str.length() - 1)
+                return str;
+            return str.substring(0, pos) + "\n" + str.substring(pos);
+        }
+
+        /*
+         * TODO:
+         * Break on a word boundary but also keep in mind modPos.
+         * Preference to be given to word boundary though.
+         * So instead of doing something like
+         *
+         * Some low fa
+         * t product
+         *
+         * DO
+         *
+         * Some low
+         * fat
+         * product
+         */
+        @NonNull
+        private String addNewLineAtModPos(String str, int modPos)
+        {
+            StringBuilder sb = new StringBuilder();
+            int startIndex = 0;
+            while (modPos + 1 < str.length() - 1) {
+                String workStr = str.substring(startIndex, modPos + 1);
+                sb.append(addNewlineAt(workStr, modPos - startIndex));
+                startIndex = modPos + 1;
+                modPos += modPos;
+            }
+            sb.append(str.substring(startIndex));
+            return sb.toString();
+        }
+
         @Override
         public View getView(int position, View convertView, ViewGroup parentGroup)
         {
@@ -206,17 +247,7 @@ public class FoodSearchResult extends AppCompatActivity {
             }
 
             LinearLayout graphLayout = (LinearLayout)searchView.findViewById(R.id.graphLayout);
-            if (graphLayout != null)
-            {
-                Pair<Integer, Integer> forPie[] = new Pair[3];
-                for (int i = 0; i < forPie.length; i++) {
-                    forPie[i] = new Pair<Integer, Integer>(
-                            new Random().nextInt(), Color.RED);
-                }
-                PieGraph pieGraph = new PieGraph(graphLayout.getContext(), forPie,
-                        graphLayout.getWidth(), graphLayout.getHeight());
-                graphLayout.addView(pieGraph);
-            }
+
 
             TextView brandName = (TextView)searchView.findViewById(R.id.topSearchBrand);
             TextView name = (TextView)searchView.findViewById(R.id.topSearchName);
@@ -224,8 +255,9 @@ public class FoodSearchResult extends AppCompatActivity {
             TextView topValue2 = (TextView)searchView.findViewById(R.id.topSearchVal2);
 
             FoodInfo item = getItem(position);
+            String foodName = addNewLineAtModPos(item.food_name, 20);
+            name.setText(foodName);
 
-            name.setText("Name: " + item.food_name);
 
 
             if (item.isGeneric())
@@ -246,6 +278,35 @@ public class FoodSearchResult extends AppCompatActivity {
             else
                 topValue2.setVisibility(View.GONE);
 
+            if (graphLayout != null)
+            {
+                 AppLogger.getInstance().debug("Child View Count = " + graphLayout.getChildCount());
+                if (graphLayout.getChildCount() == 0) {
+                    Random r = new Random();
+                    Pair<Integer, Integer> forPie[] = new Pair[3];
+                    for (int i = 0; i < forPie.length; i++) {
+                        int red, green, blue;
+                        red = r.nextInt() & 0xff;
+                        green = r.nextInt() & 0xff;
+                        blue = r.nextInt() & 0xff;
+                        forPie[i] = new Pair<Integer, Integer>(
+                                r.nextInt(), Color.rgb(red, green, blue));
+                    }
+
+                    PieGraph pieGraph = new PieGraph(graphLayout.getContext(), forPie,
+                            graphLayout.getWidth(), graphLayout.getHeight());
+                    pieGraph.index = position;
+                    LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT);
+
+                    llp.setMargins(5, 5, 5, 5);
+
+                    llp.gravity = Gravity.RIGHT;
+                    pieGraph.setLayoutParams(llp);
+                    graphLayout.addView(pieGraph);
+                }
+            }
             return searchView;
         }
     }
@@ -256,11 +317,41 @@ public class FoodSearchResult extends AppCompatActivity {
          * Value,Color pair.
          */
         private Pair<Integer, Integer> [] colorValuePairs;
+        int m_width, m_height;
+        int index;
+        public static final int MIN_WIDTH = 315, MIN_HEIGHT = 311;
 
         public PieGraph(Context context, Pair<Integer, Integer> [] pairs, int width, int height)
         {
             super(context);
             this.colorValuePairs = pairs;
+            this.setWillNotDraw(false);
+        }
+
+
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+
+            // Try for a width based on our minimum
+
+            int minw = getPaddingLeft() + getPaddingRight() + getSuggestedMinimumWidth()
+                    + MeasureSpec.getSize(widthMeasureSpec)/2;
+
+            minw = Math.max(minw, PieGraph.MIN_WIDTH);
+
+
+            //int w = resolveSizeAndState(minw, widthMeasureSpec, 0);
+
+            // Whatever the width ends up being, ask for a height that would let the pie
+            // get as big as it can
+            //int minh = MeasureSpec.getSize(heightMeasureSpec)
+            int minh = MeasureSpec.getSize(heightMeasureSpec)/5
+                    + getPaddingBottom() + getPaddingTop();//resolveSizeAndState(minh , heightMeasureSpec, 0);
+
+            minh = Math.max(minh, PieGraph.MIN_HEIGHT);
+
+            super.onMeasure(MeasureSpec.makeMeasureSpec(minw, MeasureSpec.AT_MOST)
+                    , MeasureSpec.makeMeasureSpec(minh, MeasureSpec.AT_MOST));
         }
 
         public void onDraw(Canvas canvas)
@@ -268,11 +359,14 @@ public class FoodSearchResult extends AppCompatActivity {
             int width = getWidth() - getPaddingLeft() - getPaddingRight();
             int height = getHeight() - getPaddingLeft() - getPaddingBottom();
             int left = getPaddingLeft();
+            int top = getPaddingTop();
             int maxSum = 0;
             float startAngle = 0.0f;
+            AppLogger.getInstance().debug("Position = " + index +
+                    " onDraw left = "+left + " width = " + width + ", height = " + height);
 
             Paint paint = new Paint();
-            RectF canvasSize = new RectF(left, left, width, height);
+            RectF canvasSize = new RectF(left, top, width, height);
 
             for(Pair<Integer, Integer> p : colorValuePairs) {
                 maxSum +=p.first.intValue();

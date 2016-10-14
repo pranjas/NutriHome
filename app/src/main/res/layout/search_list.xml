@@ -14,7 +14,8 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal" android:layout_width="match_parent"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorBackground"
     android:id="@+id/linearLayoutSearch"
@@ -23,7 +24,8 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:layout_weight="0.8"
+    android:layout_weight="0.3"
+    android:gravity="left"
     >
     <TextView
         android:layout_width="match_parent"
@@ -31,6 +33,8 @@
         android:id="@+id/topSearchName"
         android:textStyle="bold"
         android:textColor="@color/textColorWhite"
+        android:scrollHorizontally="false"
+        android:inputType="textMultiLine"
         />
 
     <TextView
@@ -44,6 +48,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/topSearchVal"
         android:textColor="@color/textColorWhite"
+
         />
     <TextView
         android:layout_width="match_parent"
@@ -64,7 +69,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:id="@+id/graphLayout"
-        android:layout_weight="0.2"
+        android:layout_weight="0.7"
         >
 
     </LinearLayout>
