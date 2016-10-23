@@ -24,7 +24,7 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:layout_weight="0.3"
+    android:layout_weight="0.5"
     android:gravity="left"
     >
     <TextView
@@ -69,8 +69,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:id="@+id/graphLayout"
-        android:layout_weight="0.7"
+        android:layout_weight="0.5"
         >
-
     </LinearLayout>
 </LinearLayout>

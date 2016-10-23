@@ -16,6 +16,9 @@ package com.example.pranay.nutrihome.fatsecret.Foods;
 
 import com.example.pranay.nutrihome.AppLogger;
 import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
+import com.example.pranay.nutrihome.fatsecret.FatSecretCommons;
+import com.example.pranay.nutrihome.fatsecret.Profile.Profile;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,6 +29,7 @@ import java.util.ArrayList;
  */
 public class AddFavoriteMethod extends CommonMethod<FoodInfo> {
 
+    public static String FOOD_ID = "food_id";
     public AddFavoriteMethod()
     {
         super();
@@ -45,8 +49,9 @@ public class AddFavoriteMethod extends CommonMethod<FoodInfo> {
         return null;
     }
 
-    @Override
-    public String sendRequest(MethodParam... params) {
-        return null;
+    public void addFood(Profile profile,String foodID)
+    {
+        addParameter(FatSecretCommons.OAUTH_TOKEN, profile.getoAuthToken());
+        addParameter(FOOD_ID, foodID);
     }
 }

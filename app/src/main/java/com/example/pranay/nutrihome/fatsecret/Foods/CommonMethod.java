@@ -34,6 +34,13 @@ public abstract class CommonMethod<T> implements Method<T> {
         request = new OAuthRequest(proto);
     }
 
+    public String sendRequest(MethodParam... params) {
+        for(MethodParam p : params) {
+            request.addParameter(p.name, p.value);
+        }
+        return request.sendRequest(true, true);
+    }
+
     public void addParameter(String param, String value)
     {
         request.addParameter(param, value);

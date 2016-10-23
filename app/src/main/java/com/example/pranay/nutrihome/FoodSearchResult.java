@@ -33,7 +33,10 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.HeaderViewListAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ScrollView;
@@ -41,10 +44,12 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
+import com.example.pranay.nutrihome.fatsecret.FatSecretCommons;
 import com.example.pranay.nutrihome.fatsecret.Foods.Food;
 import com.example.pranay.nutrihome.fatsecret.Foods.FoodConstants;
 import com.example.pranay.nutrihome.fatsecret.Foods.FoodInfo;
 import com.example.pranay.nutrihome.fatsecret.Foods.MethodParam;
+import com.example.pranay.nutrihome.fatsecret.Method;
 import com.example.pranay.nutrihome.fatsecret.Profile.Profile;
 
 import org.w3c.dom.Text;
@@ -57,24 +62,94 @@ import java.util.Random;
 public class FoodSearchResult extends AppCompatActivity {
 
     protected ProgressDialog progressBar;
+
+    protected int currentSearchPage;
+    protected String currentSearchExpression = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Intent fromSearchActivity  = getIntent();
         String searchText = "";
-        if (fromSearchActivity != null)
+        if (fromSearchActivity != null) {
             searchText = fromSearchActivity.getExtras().getString(IntentURI.SEARCH_FOOD);
+            currentSearchExpression = searchText;
+        }
         setContentView(R.layout.activity_food_search_result);
-        progressBar = ProgressDialog.show(this,
-                            "Loading...", "Searching for " + searchText,
-                            true);
-        new RequestReader().execute(searchText);
+        new RequestReader().execute(searchText, String.valueOf(currentSearchPage));
     }
 
 
     private class RequestReader extends AsyncTask<String, Integer, ArrayList<FoodInfo>> {
 
         private FoodSearchResult appCompatActivity = FoodSearchResult.this;
+        private ArrayList<MethodParam> mFoodParams = new ArrayList<>();
+        Profile mProfile;
+        @Override
+        protected void onPreExecute()
+        {
+            mFoodParams.clear();
+            /*
+             * NEED TO ADD SEARCH_EXPRESSION and any other
+             * parameters. This would be done in PRE-EXECUTE?
+             */
+            mFoodParams.addAll(getFixedResourceParams());
+            progressBar = ProgressDialog.show(appCompatActivity,
+                    "Loading...", "Searching for " + appCompatActivity.currentSearchExpression,
+                    true);
+        }
+
+        private void addProfileParams()
+        {
+            if (mProfile != null) {
+                mFoodParams.add(new MethodParam(OAuthConstants.OAUTH_ACCESS_KEY, mProfile.getoAuthSecret()));
+                mFoodParams.add(new MethodParam(OAuthConstants.OAUTH_AUTH_TOKEN, mProfile.getoAuthToken()));
+            }
+        }
+
+        private Profile getProfile()
+        {
+            if (mProfile == null) {
+                mProfile = Profile.createProfile("kumar.srivastava.pranay@gmail.com",
+                        appCompatActivity.getResources().getString(R.string.consumerKey)
+                        , appCompatActivity.getResources().getString(R.string.sharedKey),
+                        "wtf", appCompatActivity.getResources().getString(R.string.api_url),
+                        OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1
+                );
+            }
+
+            if (mProfile == null)
+                mProfile = Profile.getProfileFromServer("kumar.srivastava.pranay@gmail.com",
+                        appCompatActivity.getResources().getString(R.string.consumerKey)
+                        ,appCompatActivity.getResources().getString(R.string.sharedKey),
+                        "wtf", appCompatActivity.getResources().getString(R.string.api_url),
+                        OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1);
+
+            return mProfile;
+        }
+
+        protected LinearLayout inflateAndHookSearchListFooter()
+        {
+            LinearLayout searchListFooterLayout= (LinearLayout)getLayoutInflater().inflate(R.layout.search_list_footer, null);
+            AbsListView.LayoutParams footerLP = new AbsListView.LayoutParams(
+                    AbsListView.LayoutParams.MATCH_PARENT,
+                    AbsListView.LayoutParams.MATCH_PARENT
+            );
+            /*
+             * TODO:
+             * Need to check if we need to inflate every time?
+             */
+            searchListFooterLayout.setGravity(Gravity.CENTER_HORIZONTAL);
+            searchListFooterLayout.setLayoutParams(footerLP);
+
+            Button btnNext = (Button)searchListFooterLayout.findViewById(R.id.btnNext);
+            Button btnPrev = (Button)searchListFooterLayout.findViewById(R.id.btnPrev);
+            btnNext.setOnClickListener(new ListViewBtnHandler());
+            btnPrev.setOnClickListener(new ListViewBtnHandler());
+
+            return searchListFooterLayout;
+        }
+
 
         @Override
         protected void onPostExecute(ArrayList<FoodInfo> result)
@@ -95,49 +170,56 @@ public class FoodSearchResult extends AppCompatActivity {
                 listView.setAdapter(new FoodSearchAdapter(FoodSearchResult.this,
                         R.layout.search_list, result));
             else {
-                ArrayAdapter <FoodInfo> listAdapter = (ArrayAdapter)listView.getAdapter();
+
+                ArrayAdapter <FoodInfo> listAdapter =
+                        (ArrayAdapter)
+                                ((HeaderViewListAdapter)listView.getAdapter()).getWrappedAdapter();
+                /*
+                 * TODO:
+                 * This might add everything?
+                 */
+                listAdapter.clear();
                 listAdapter.addAll(result);
             }
+            if (listView.getFooterViewsCount() == 0)
+                listView.addFooterView(inflateAndHookSearchListFooter());
         }
 
+        /*
+         * The arguments are ordered as, in this order,
+         * @search_expression
+         * @page_number
+         */
         @Override
         protected ArrayList<FoodInfo> doInBackground(String... params) {
             try {
-                Profile p = Profile.createProfile( "kumar.srivastava.pranay@gmail.com",
-                        appCompatActivity.getResources().getString(R.string.consumerKey)
-                        ,appCompatActivity.getResources().getString(R.string.sharedKey),
-                        "wtf", appCompatActivity.getResources().getString(R.string.api_url),
-                        OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1
-                );
 
-                if (p == null)
-                    p = Profile.getProfileFromServer("kumar.srivastava.pranay@gmail.com",
-                            appCompatActivity.getResources().getString(R.string.consumerKey)
-                            ,appCompatActivity.getResources().getString(R.string.sharedKey),
-                            "wtf", appCompatActivity.getResources().getString(R.string.api_url),
-                            OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1);
+                getProfile(); /* Doesn't necessarily goes to network.*/
+                addProfileParams(); /*Does always sets profile params, if above call was success*/
 
-            /*
-             * NEED TO ADD SEARCH_EXPRESSION and any other
-             * parameters. This would be done in PRE-EXECUTE?
-             */
-                ArrayList<MethodParam> foodParams = new ArrayList<MethodParam>();
-                foodParams.add(new MethodParam(OAuthConstants.OAUTH_ACCESS_KEY, p.getoAuthSecret()));
-                foodParams.add(new MethodParam(OAuthConstants.OAUTH_AUTH_TOKEN,  p.getoAuthToken()));
-                foodParams.add(new MethodParam(FoodConstants.SEARCH_EXPRESSION, params[0]));
-                foodParams.addAll(getFixedResourceParams());
+                /*
+                 * Only add search expression if it's there.
+                 */
+                if (params.length > 0)
+                    mFoodParams.add(new MethodParam(FoodConstants.SEARCH_EXPRESSION, params[0]));
+
+                /*
+                 * Only add page number if it's there.
+                 */
+                if (params.length > 1)
+                    mFoodParams.add(new MethodParam(FatSecretCommons.PAGE_NUMBER, params[1]));
 
                 ArrayList<FoodInfo> foods = Food.search(OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1,
-                        foodParams.toArray(new MethodParam[0]));
+                        mFoodParams.toArray(new MethodParam[0]));
 
                 for (int i = 0; foods != null && i < foods.size(); i++) {
                     AppLogger.getInstance().debug(foods.toString());
                 }
 
-                if(p != null) {
-                    if (!p.getUserInformation())
+                if(mProfile != null) {
+                    if (!mProfile.getUserInformation())
                         AppLogger.getInstance().debug("User information not found");
-                    AppLogger.getInstance().debug(p.toString());
+                    AppLogger.getInstance().debug(mProfile.toString());
                 }
                 return foods;
 
@@ -163,6 +245,28 @@ public class FoodSearchResult extends AppCompatActivity {
                     appCompatActivity.getResources().getString(R.string.api_url)));
 
             return result;
+        }
+    }
+
+    private class ListViewBtnHandler implements View.OnClickListener {
+
+        private FoodSearchResult appCompatActivity = FoodSearchResult.this;
+        @Override
+        public void onClick(View v)
+        {
+            int prevPage = currentSearchPage;
+            if (v.getId() == R.id.btnNext)
+                appCompatActivity.currentSearchPage++;
+
+            if (v.getId() == R.id.btnPrev)
+                appCompatActivity.currentSearchPage--;
+
+            if (appCompatActivity.currentSearchPage < 0)
+                appCompatActivity.currentSearchPage = 0;
+
+            if (prevPage != currentSearchPage)
+                new RequestReader().execute(appCompatActivity.currentSearchExpression,
+                        String.valueOf(appCompatActivity.currentSearchPage));
         }
     }
 
@@ -199,13 +303,6 @@ public class FoodSearchResult extends AppCompatActivity {
             super(context, resource, textViewResourceId, objects);
         }
 
-        private String addNewlineAt(String str, int pos)
-        {
-            if (pos > str.length() - 1)
-                return str;
-            return str.substring(0, pos) + "\n" + str.substring(pos);
-        }
-
         /*
          * TODO:
          * Break on a word boundary but also keep in mind modPos.
@@ -225,14 +322,18 @@ public class FoodSearchResult extends AppCompatActivity {
         private String addNewLineAtModPos(String str, int modPos)
         {
             StringBuilder sb = new StringBuilder();
-            int startIndex = 0;
-            while (modPos + 1 < str.length() - 1) {
-                String workStr = str.substring(startIndex, modPos + 1);
-                sb.append(addNewlineAt(workStr, modPos - startIndex));
-                startIndex = modPos + 1;
-                modPos += modPos;
+            String [] words = str.split(" ");
+            int spaceLeft = modPos - 1;
+            for (String word: words) {
+                if (word.length() < spaceLeft) {
+                    sb.append(word +" ");
+                    spaceLeft -= word.length()  + 1;
+                }
+                else {
+                    sb.append("\n");
+                    spaceLeft = modPos - 1;
+                }
             }
-            sb.append(str.substring(startIndex));
             return sb.toString();
         }
 
@@ -254,8 +355,9 @@ public class FoodSearchResult extends AppCompatActivity {
             TextView topValue1 = (TextView)searchView.findViewById(R.id.topSearchVal);
             TextView topValue2 = (TextView)searchView.findViewById(R.id.topSearchVal2);
 
+
             FoodInfo item = getItem(position);
-            String foodName = addNewLineAtModPos(item.food_name, 20);
+            String foodName = addNewLineAtModPos(item.food_name, 30);
             name.setText(foodName);
 
 
@@ -280,7 +382,6 @@ public class FoodSearchResult extends AppCompatActivity {
 
             if (graphLayout != null)
             {
-                 AppLogger.getInstance().debug("Child View Count = " + graphLayout.getChildCount());
                 if (graphLayout.getChildCount() == 0) {
                     Random r = new Random();
                     Pair<Integer, Integer> forPie[] = new Pair[3];
@@ -319,13 +420,15 @@ public class FoodSearchResult extends AppCompatActivity {
         private Pair<Integer, Integer> [] colorValuePairs;
         int m_width, m_height;
         int index;
-        public static final int MIN_WIDTH = 315, MIN_HEIGHT = 311;
+        Paint mPaint;
+        public static final int MIN_WIDTH = 150, MIN_HEIGHT = 150;
 
         public PieGraph(Context context, Pair<Integer, Integer> [] pairs, int width, int height)
         {
             super(context);
             this.colorValuePairs = pairs;
             this.setWillNotDraw(false);
+            mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         }
 
 
@@ -335,17 +438,11 @@ public class FoodSearchResult extends AppCompatActivity {
             // Try for a width based on our minimum
 
             int minw = getPaddingLeft() + getPaddingRight() + getSuggestedMinimumWidth()
-                    + MeasureSpec.getSize(widthMeasureSpec)/2;
+                    + MeasureSpec.getSize(widthMeasureSpec)/9;
 
             minw = Math.max(minw, PieGraph.MIN_WIDTH);
-
-
-            //int w = resolveSizeAndState(minw, widthMeasureSpec, 0);
-
-            // Whatever the width ends up being, ask for a height that would let the pie
-            // get as big as it can
-            //int minh = MeasureSpec.getSize(heightMeasureSpec)
-            int minh = MeasureSpec.getSize(heightMeasureSpec)/5
+            
+            int minh = MeasureSpec.getSize(heightMeasureSpec)/16
                     + getPaddingBottom() + getPaddingTop();//resolveSizeAndState(minh , heightMeasureSpec, 0);
 
             minh = Math.max(minh, PieGraph.MIN_HEIGHT);
@@ -365,7 +462,6 @@ public class FoodSearchResult extends AppCompatActivity {
             AppLogger.getInstance().debug("Position = " + index +
                     " onDraw left = "+left + " width = " + width + ", height = " + height);
 
-            Paint paint = new Paint();
             RectF canvasSize = new RectF(left, top, width, height);
 
             for(Pair<Integer, Integer> p : colorValuePairs) {
@@ -373,9 +469,9 @@ public class FoodSearchResult extends AppCompatActivity {
             }
 
             for(Pair<Integer, Integer> p: colorValuePairs) {
-                paint.setColor(p.second);
+                mPaint.setColor(p.second);
                 float sweep = (p.first * 360.0f) / maxSum;
-                canvas.drawArc(canvasSize, startAngle, sweep,true, paint);
+                canvas.drawArc(canvasSize, startAngle, sweep,true, mPaint);
                 startAngle += sweep;
             }
         }

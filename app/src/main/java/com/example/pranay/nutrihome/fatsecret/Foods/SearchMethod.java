@@ -35,15 +35,6 @@ public class SearchMethod extends CommonMethod<FoodInfo> {
         super(proto);
     }
 
-
-    @Override
-    public String sendRequest(MethodParam...params) {
-        for(MethodParam p : params) {
-            request.addParameter(p.name, p.value);
-        }
-        return request.sendRequest(true, true);
-    }
-
     @Override
     public ArrayList<FoodInfo> parse(String jsonInput) {
         try {
