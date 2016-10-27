@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <!--
   ~ Copyright (c) 2016.
   ~ Original Author[Case insensitive]: Pranay Kumar Srivastava <pranjas (at) gmail.com>
@@ -12,16 +13,19 @@
   ~
   -->
 
-<resources>
-    <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="activity_horizontal_margin">16dp</dimen>
-    <dimen name="activity_vertical_margin">16dp</dimen>
-    <dimen name="app_bar_height">180dp</dimen>
-    <dimen name="fab_margin">16dp</dimen>
-    <dimen name="text_margin">16dp</dimen>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <dimen name="activity_small_hmargin">5dp</dimen>
-    <dimen name="activity_small_vmargin">5dp</dimen>
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="@dimen/rounded_radius" />
+            <!--
+            <solid android:color="@color/colorBackground" />
+            -->
+            <stroke
+                android:width="@dimen/rounded_radius"
+                android:color="@color/textColorWhite"
+                />
+        </shape>
+    </item>
 
-    <dimen name="rounded_radius">3dp</dimen>
-</resources>
+</selector>

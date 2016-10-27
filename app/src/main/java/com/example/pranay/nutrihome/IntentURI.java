@@ -18,6 +18,9 @@ package com.example.pranay.nutrihome;
  * Created by pranay on 24/9/16.
  */
 public interface IntentURI {
-    String SEARCH_FOOD = "search_food";
-    String SEARCH_NO_RESULT="__NO_SEARCH_RESULT__";
+    String BASE_URI = "com.example.pranay.nutrihome";
+    String SEARCH_FOOD = BASE_URI + "search_food";
+    String SEARCH_NO_RESULT=BASE_URI + "__NO_SEARCH_RESULT__";
+    String FOOD_ITEM_SHOW = BASE_URI +"FOOD_ITEM_SHOW";
+    String SEARCH_FOOD_PAGE = "BASE_URI" + "SEARCH_FOOD_PAGE";
 }

@@ -14,6 +14,8 @@
 
 package com.example.pranay.nutrihome.fatsecret.Foods;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Pair;
 
 import java.util.ArrayList;
@@ -23,7 +25,7 @@ import java.util.StringTokenizer;
 /**
  * Created by pranay on 18/9/16.
  */
-public class FoodInfo {
+public class FoodInfo implements Parcelable {
 
     public  String
             food_id,
@@ -36,6 +38,49 @@ public class FoodInfo {
 
     protected FoodInfoNutrient[] sortedNutrients;
     protected int nutrientCount;
+
+    @Override
+    public int describeContents()
+    {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel out, int flags)
+    {
+        out.writeString(food_id);
+        out.writeString(food_name);
+        out.writeString(food_type);
+        out.writeString(food_url);
+        out.writeString(food_description);
+        out.writeString(brand_name);
+        out.writeString(measurement);
+    }
+
+    public static final Parcelable.Creator<FoodInfo> CREATOR
+            = new Parcelable.Creator<FoodInfo>() {
+        public FoodInfo createFromParcel(Parcel in) {
+            return new FoodInfo(in);
+        }
+
+        public FoodInfo[] newArray(int size) {
+            return new FoodInfo[size];
+        }
+    };
+
+    private FoodInfo(Parcel in) {
+        food_id = in.readString();
+        food_name = in.readString();
+        food_type = in.readString();
+        food_url = in.readString();
+        food_description = in.readString();
+        brand_name = in.readString();
+        measurement = in.readString();
+        setDosageandNutritionalInformation();
+        sortNutrients();
+    }
+
+
 
     public FoodInfo(String food_id, String food_name, String food_type,
                     String brand_name, String food_description, String food_url)
@@ -180,6 +225,7 @@ public class FoodInfo {
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
+        FoodInfoNutrient[] enumCopy = FoodInfoNutrient.values();
         sb.append("===\n ID: " + food_id +"\n");
         sb.append("Name: " + food_name + "\n");
         sb.append("Type: " + food_type +"\n");
@@ -191,6 +237,27 @@ public class FoodInfo {
         sb.append("Measurement: " + measurement + "\n");
         sb.append("Brand: " + brand_name + "\n===\n");
 
+        for (int i = 0; i < nutrients.length; i++) {
+            if (nutrients[i] != null) {
+                sb.append(enumCopy[i].name() +": " + nutrients[i] + "\n");
+            }
+        }
         return sb.toString();
+    }
+
+    public static final int PERCENT_CARBS = 0,
+                            PERCENT_PROTEIN = 1,
+                            PERCENT_FAT = 2;
+    private static final int CALORIE_PER_GRAM[] = {
+            4, /*By CARBOHYDRATE calorie per gram*/
+            4, /*By PROTEIN calorie per gram*/
+            9, /*By FAT calorie per gram*/
+    };
+
+    public float getPercentCalorie(int how, float amount, float totalCalories)
+    {
+        if (how > CALORIE_PER_GRAM.length)
+            return 0.0f;
+        return (CALORIE_PER_GRAM[how] * amount) / totalCalories;
     }
 }

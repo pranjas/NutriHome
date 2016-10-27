@@ -19,6 +19,8 @@
     android:layout_height="match_parent"
     android:background="@color/colorBackground"
     android:id="@+id/linearLayoutSearch"
+    android:descendantFocusability="blocksDescendants"
+
     >
 <LinearLayout
     android:layout_width="wrap_content"
@@ -26,6 +28,7 @@
     android:orientation="vertical"
     android:layout_weight="0.5"
     android:gravity="left"
+
     >
     <TextView
         android:layout_width="match_parent"

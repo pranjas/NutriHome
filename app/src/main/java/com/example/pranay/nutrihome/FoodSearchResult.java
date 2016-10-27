@@ -34,6 +34,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.HeaderViewListAdapter;
@@ -62,9 +63,15 @@ import java.util.Random;
 public class FoodSearchResult extends AppCompatActivity {
 
     protected ProgressDialog progressBar;
-
     protected int currentSearchPage;
     protected String currentSearchExpression = "";
+
+    protected ArrayList<FoodInfo> currentResultSet;
+
+    public ArrayList<FoodInfo> getCurrentResultSet()
+    {
+        return currentResultSet;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,6 +81,7 @@ public class FoodSearchResult extends AppCompatActivity {
         if (fromSearchActivity != null) {
             searchText = fromSearchActivity.getExtras().getString(IntentURI.SEARCH_FOOD);
             currentSearchExpression = searchText;
+            currentSearchPage = fromSearchActivity.getIntExtra(IntentURI.SEARCH_FOOD_PAGE, 0);
         }
         setContentView(R.layout.activity_food_search_result);
         new RequestReader().execute(searchText, String.valueOf(currentSearchPage));
@@ -164,7 +172,9 @@ public class FoodSearchResult extends AppCompatActivity {
                 NavUtils.navigateUpTo(FoodSearchResult.this, parentIntent);
                 return;
             }
-            ListView listView = (ListView)findViewById(R.id.listSearchFood);
+            currentResultSet = result;
+            final ListView listView = (ListView)findViewById(R.id.listSearchFood);
+
 
             if (listView.getAdapter() == null || listView.getAdapter().getCount() == 0)
                 listView.setAdapter(new FoodSearchAdapter(FoodSearchResult.this,
@@ -183,6 +193,18 @@ public class FoodSearchResult extends AppCompatActivity {
             }
             if (listView.getFooterViewsCount() == 0)
                 listView.addFooterView(inflateAndHookSearchListFooter());
+
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Intent forFoodItemShow = new Intent(getApplicationContext(),
+                            FoodItemShow.class);
+                    forFoodItemShow.putExtra(IntentURI.FOOD_ITEM_SHOW, currentResultSet.get(position));
+                    forFoodItemShow.putExtra(IntentURI.SEARCH_FOOD, currentSearchExpression);
+                    forFoodItemShow.putExtra(IntentURI.SEARCH_FOOD_PAGE, currentSearchPage);
+                    startActivity(forFoodItemShow);
+                }
+            });
         }
 
         /*
@@ -303,28 +325,14 @@ public class FoodSearchResult extends AppCompatActivity {
             super(context, resource, textViewResourceId, objects);
         }
 
-        /*
-         * TODO:
-         * Break on a word boundary but also keep in mind modPos.
-         * Preference to be given to word boundary though.
-         * So instead of doing something like
-         *
-         * Some low fa
-         * t product
-         *
-         * DO
-         *
-         * Some low
-         * fat
-         * product
-         */
         @NonNull
         private String addNewLineAtModPos(String str, int modPos)
         {
             StringBuilder sb = new StringBuilder();
             String [] words = str.split(" ");
             int spaceLeft = modPos - 1;
-            for (String word: words) {
+            for (int i = 0; i < words.length; i++) {
+                String word = words[i];
                 if (word.length() < spaceLeft) {
                     sb.append(word +" ");
                     spaceLeft -= word.length()  + 1;
@@ -332,6 +340,7 @@ public class FoodSearchResult extends AppCompatActivity {
                 else {
                     sb.append("\n");
                     spaceLeft = modPos - 1;
+                    i--;
                 }
             }
             return sb.toString();
