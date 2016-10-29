@@ -23,4 +23,5 @@ public interface IntentURI {
     String SEARCH_NO_RESULT=BASE_URI + "__NO_SEARCH_RESULT__";
     String FOOD_ITEM_SHOW = BASE_URI +"FOOD_ITEM_SHOW";
     String SEARCH_FOOD_PAGE = "BASE_URI" + "SEARCH_FOOD_PAGE";
+
 }

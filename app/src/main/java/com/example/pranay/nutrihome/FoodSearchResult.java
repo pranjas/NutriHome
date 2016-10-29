@@ -63,7 +63,7 @@ import java.util.Random;
 public class FoodSearchResult extends AppCompatActivity {
 
     protected ProgressDialog progressBar;
-    protected int currentSearchPage;
+    protected int currentSearchPage = -1;
     protected String currentSearchExpression = "";
 
     protected ArrayList<FoodInfo> currentResultSet;
@@ -76,16 +76,43 @@ public class FoodSearchResult extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Intent fromSearchActivity  = getIntent();
-        String searchText = "";
-        if (fromSearchActivity != null) {
-            searchText = fromSearchActivity.getExtras().getString(IntentURI.SEARCH_FOOD);
-            currentSearchExpression = searchText;
-            currentSearchPage = fromSearchActivity.getIntExtra(IntentURI.SEARCH_FOOD_PAGE, 0);
-        }
+        int searchPage = 0;
         setContentView(R.layout.activity_food_search_result);
-        new RequestReader().execute(searchText, String.valueOf(currentSearchPage));
+
+        /*
+         * No saved instance, get it again from network.
+         */
+        if(savedInstanceState == null) {
+            AppLogger.getInstance().debug("SavedInstance is null");
+            Intent fromSearchActivity = getIntent();
+            if (fromSearchActivity != null) {
+                currentSearchExpression = fromSearchActivity.getExtras().
+                                                    getString(IntentURI.SEARCH_FOOD);
+                currentSearchPage = fromSearchActivity.getIntExtra(IntentURI.SEARCH_FOOD_PAGE, -1);
+            }
+        }
+        else {
+            AppLogger.getInstance().debug("Bundle is not null in onCreate");
+            currentResultSet = savedInstanceState.getParcelableArrayList(IntentURI.SEARCH_FOOD);
+            currentSearchExpression = savedInstanceState.getString(FoodConstants.SEARCH_EXPRESSION);
+            currentSearchPage = savedInstanceState.getInt(FatSecretCommons.PAGE_NUMBER);
+            searchPage = currentSearchPage;
+        }
+        new RequestReader().execute(currentSearchExpression,
+                String.valueOf(searchPage));
     }
+
+    @Override
+    protected void onSaveInstanceState(Bundle savedInstanceState)
+    {
+        super.onSaveInstanceState(savedInstanceState);
+        AppLogger.getInstance().debug("Calling onSaveInstance");
+        savedInstanceState.putParcelableArrayList(IntentURI.SEARCH_FOOD,
+                currentResultSet);
+        savedInstanceState.putString(FoodConstants.SEARCH_EXPRESSION, currentSearchExpression);
+        savedInstanceState.putInt(FatSecretCommons.PAGE_NUMBER, currentSearchPage);
+    }
+
 
 
     private class RequestReader extends AsyncTask<String, Integer, ArrayList<FoodInfo>> {
@@ -110,8 +137,10 @@ public class FoodSearchResult extends AppCompatActivity {
         private void addProfileParams()
         {
             if (mProfile != null) {
-                mFoodParams.add(new MethodParam(OAuthConstants.OAUTH_ACCESS_KEY, mProfile.getoAuthSecret()));
-                mFoodParams.add(new MethodParam(OAuthConstants.OAUTH_AUTH_TOKEN, mProfile.getoAuthToken()));
+                mFoodParams.add(new MethodParam(OAuthConstants.OAUTH_ACCESS_KEY,
+                                                        mProfile.getoAuthSecret()));
+                mFoodParams.add(new MethodParam(OAuthConstants.OAUTH_AUTH_TOKEN,
+                                                        mProfile.getoAuthToken()));
             }
         }
 
@@ -138,7 +167,8 @@ public class FoodSearchResult extends AppCompatActivity {
 
         protected LinearLayout inflateAndHookSearchListFooter()
         {
-            LinearLayout searchListFooterLayout= (LinearLayout)getLayoutInflater().inflate(R.layout.search_list_footer, null);
+            LinearLayout searchListFooterLayout= (LinearLayout)getLayoutInflater().
+                                                    inflate(R.layout.search_list_footer, null);
             AbsListView.LayoutParams footerLP = new AbsListView.LayoutParams(
                     AbsListView.LayoutParams.MATCH_PARENT,
                     AbsListView.LayoutParams.MATCH_PARENT
@@ -216,9 +246,6 @@ public class FoodSearchResult extends AppCompatActivity {
         protected ArrayList<FoodInfo> doInBackground(String... params) {
             try {
 
-                getProfile(); /* Doesn't necessarily goes to network.*/
-                addProfileParams(); /*Does always sets profile params, if above call was success*/
-
                 /*
                  * Only add search expression if it's there.
                  */
@@ -226,10 +253,20 @@ public class FoodSearchResult extends AppCompatActivity {
                     mFoodParams.add(new MethodParam(FoodConstants.SEARCH_EXPRESSION, params[0]));
 
                 /*
-                 * Only add page number if it's there.
+                 * Only add page number if it's there. But check if are coming
+                 * on the same page as the last one showed. This is useful for when
+                 * activity is suspended or we return to it.
                  */
-                if (params.length > 1)
+                if (params.length > 1) {
+                    if (Integer.valueOf(params[1]).intValue() == currentSearchPage)
+                        return currentResultSet;
                     mFoodParams.add(new MethodParam(FatSecretCommons.PAGE_NUMBER, params[1]));
+                    currentSearchPage = Integer.valueOf(params[1]).intValue();
+                }
+
+                getProfile(); /* Doesn't necessarily goes to network.*/
+                addProfileParams(); /*Does always sets profile params, if above call was success*/
+
 
                 ArrayList<FoodInfo> foods = Food.search(OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1,
                         mFoodParams.toArray(new MethodParam[0]));
@@ -277,18 +314,18 @@ public class FoodSearchResult extends AppCompatActivity {
         public void onClick(View v)
         {
             int prevPage = currentSearchPage;
+            int nextPage = -1;
             if (v.getId() == R.id.btnNext)
-                appCompatActivity.currentSearchPage++;
+                nextPage = prevPage + 1;
 
             if (v.getId() == R.id.btnPrev)
-                appCompatActivity.currentSearchPage--;
+                nextPage = prevPage - 1;
 
-            if (appCompatActivity.currentSearchPage < 0)
-                appCompatActivity.currentSearchPage = 0;
+            if(nextPage < 0)
+                nextPage = 0;
 
-            if (prevPage != currentSearchPage)
-                new RequestReader().execute(appCompatActivity.currentSearchExpression,
-                        String.valueOf(appCompatActivity.currentSearchPage));
+            new RequestReader().execute(appCompatActivity.currentSearchExpression,
+                        String.valueOf(nextPage));
         }
     }
 
