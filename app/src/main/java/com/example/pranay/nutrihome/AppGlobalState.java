@@ -12,15 +12,27 @@
  *
  */
 
-package com.example.pranay.nutrihome.fatsecret;
+package com.example.pranay.nutrihome;
 
-import java.util.ArrayList;
+import android.app.Application;
+import android.content.Context;
 
 /**
- * Created by pranay on 18/9/16.
+ * Created by pranay on 20/11/16.
  */
-public interface Method <T> {
+public class AppGlobalState extends Application {
 
-    ArrayList<T> parse(String jsonInput);
-    String sendRequest(MethodParam...params);
+    private static Context globalContext;
+
+    @Override
+    public void onCreate()
+    {
+        super.onCreate();
+        globalContext = getApplicationContext();
+    }
+
+    public static Context getGlobalContext()
+    {
+        return globalContext;
+    }
 }

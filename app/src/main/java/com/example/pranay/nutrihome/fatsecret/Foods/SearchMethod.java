@@ -16,8 +16,7 @@ package com.example.pranay.nutrihome.fatsecret.Foods;
 
 import com.example.pranay.nutrihome.AppLogger;
 import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
-import com.example.pranay.nutrihome.fatsecret.FatSecretCommons;
-import com.example.pranay.nutrihome.fatsecret.Method;
+import com.example.pranay.nutrihome.fatsecret.CommonMethod;
 
 import org.json.JSONArray;
 import org.json.JSONException;

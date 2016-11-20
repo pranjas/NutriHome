@@ -16,6 +16,7 @@ package com.example.pranay.nutrihome.fatsecret.Foods;
 
 import com.example.pranay.nutrihome.AppLogger;
 import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
+import com.example.pranay.nutrihome.fatsecret.CommonMethod;
 import com.example.pranay.nutrihome.fatsecret.FatSecretCommons;
 import com.example.pranay.nutrihome.fatsecret.Profile.Profile;
 
@@ -27,14 +28,14 @@ import java.util.ArrayList;
 /**
  * Created by pranay on 18/9/16.
  */
-public class AddFavoriteMethod extends CommonMethod<FoodInfo> {
+public class AddDeleteFavoriteMethod extends CommonMethod<FoodInfo> {
 
     public static String FOOD_ID = "food_id";
-    public AddFavoriteMethod()
+    public AddDeleteFavoriteMethod()
     {
         super();
     }
-    public AddFavoriteMethod(OAuthConstants.OAuthProto proto){
+    public AddDeleteFavoriteMethod(OAuthConstants.OAuthProto proto){
         super(proto);
     }
 
@@ -42,16 +43,43 @@ public class AddFavoriteMethod extends CommonMethod<FoodInfo> {
     public ArrayList<FoodInfo> parse(String jsonInput) {
         try {
             JSONObject successObject = new JSONObject(jsonInput);
+            String isSuccess = successObject.getString("success");
+            if (isSuccess.equals("1"))
+                AppLogger.getInstance().debug("Successfully added food");
+            else
+                AppLogger.getInstance().debug("OOPS....couldn't add food");
 
         } catch (JSONException e) {
             AppLogger.getInstance().error(e.getMessage());
         }
+        /*
+         Always return null for this.
+         */
         return null;
+    }
+
+    private void foodAddorDelete(Profile profile, String foodID, boolean delete)
+    {
+        if (delete)
+            addParameter(FatSecretCommons.METHOD, FoodConstants.METHOD_DELETE_FAVOURITE);
+        else
+            addParameter(FatSecretCommons.METHOD, FoodConstants.METHOD_ADD_FAVOURITE);
+
+        addParameter(FatSecretCommons.OAUTH_TOKEN, profile.getoAuthToken());
+        addParameter(FOOD_ID, foodID);
+        addParameter(FatSecretCommons.FORMAT, FatSecretCommons.FORMAT_JSON);
+        String reply = sendRequest();
+        if (reply != null)
+            parse(reply);
     }
 
     public void addFood(Profile profile,String foodID)
     {
-        addParameter(FatSecretCommons.OAUTH_TOKEN, profile.getoAuthToken());
-        addParameter(FOOD_ID, foodID);
+        foodAddorDelete(profile, foodID, false);
+    }
+
+    public void deleteFood(Profile profile, String foodID)
+    {
+        foodAddorDelete(profile, foodID, true);
     }
 }

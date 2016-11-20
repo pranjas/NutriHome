@@ -23,6 +23,7 @@
     android:paddingTop="@dimen/activity_small_vmargin"
     android:orientation="vertical"
     tools:context="com.example.pranay.nutrihome.FoodSearchResult"
+    android:id="@+id/__container_layout"
     >
 
     <ListView

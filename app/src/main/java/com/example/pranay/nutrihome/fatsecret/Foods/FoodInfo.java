@@ -14,12 +14,16 @@
 
 package com.example.pranay.nutrihome.fatsecret.Foods;
 
+
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Pair;
 
+import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
+import com.example.pranay.nutrihome.fatsecret.FatSecretCommons;
+import com.example.pranay.nutrihome.fatsecret.MethodParam;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.StringTokenizer;
 
 /**
@@ -36,8 +40,12 @@ public class FoodInfo implements Parcelable {
             brand_name,
             measurement;
 
+
     protected FoodInfoNutrient[] sortedNutrients;
     protected int nutrientCount;
+    protected boolean hasServings;
+
+    protected ArrayList<FoodServing> servings;
 
     @Override
     public int describeContents()
@@ -55,6 +63,10 @@ public class FoodInfo implements Parcelable {
         out.writeString(food_description);
         out.writeString(brand_name);
         out.writeString(measurement);
+        out.writeValue(hasServings);
+
+        if (hasServings)
+            out.writeTypedList(servings);
     }
 
     public static final Parcelable.Creator<FoodInfo> CREATOR
@@ -76,6 +88,9 @@ public class FoodInfo implements Parcelable {
         food_description = in.readString();
         brand_name = in.readString();
         measurement = in.readString();
+        hasServings = (boolean) in.readValue(null);
+        if (hasServings)
+            servings = in.readArrayList(FoodServing.class.getClassLoader());
         setDosageandNutritionalInformation();
         sortNutrients();
     }
@@ -187,20 +202,9 @@ public class FoodInfo implements Parcelable {
         PROTEIN,
         CARBS,
         CALORIES,
-        FAT,
-        SATURATED_FAT,
-        POLYUNSATURATED_FAT,
-        MONOUNSATURATED_FAT,
-        TRANS_FAT,
-        CHOLESTROL,
-        SODIUM,
-        POTTASIUM,
-        SUGAR,
-        VITAMIN_A,
-        VITAMIN_C,
-        CALCIUM,
-        IRON
+        FAT
     }
+
 
     public static final int MAX_NUTRIENT_COUNT = FoodInfoNutrient.values().length;
 
@@ -242,6 +246,15 @@ public class FoodInfo implements Parcelable {
                 sb.append(enumCopy[i].name() +": " + nutrients[i] + "\n");
             }
         }
+
+        if (servings != null)
+        {
+            for (FoodServing serving:servings
+                 ) {
+                sb.append(serving);
+            }
+        }
+
         return sb.toString();
     }
 
@@ -259,5 +272,23 @@ public class FoodInfo implements Parcelable {
         if (how > CALORIE_PER_GRAM.length)
             return 0.0f;
         return (CALORIE_PER_GRAM[how] * amount) / totalCalories;
+    }
+
+    public void initliaizeServings(OAuthConstants.OAuthProto proto,
+                                   MethodParam...params)
+    {
+        /*
+         * Don't do unnecessary calls to method.
+         */
+
+        if (servings != null)
+            return;
+
+        GetMethod getMethod = new GetMethod(proto, food_id);
+        getMethod.addParameter(FatSecretCommons.METHOD, FoodConstants.METHOD_GET);
+        getMethod.addParameter(FatSecretCommons.FORMAT, FatSecretCommons.FORMAT_JSON);
+        String jsonOutput = getMethod.sendRequest(params);
+        servings = getMethod.parse(jsonOutput);
+
     }
 }

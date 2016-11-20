@@ -12,11 +12,15 @@
  *
  */
 
-package com.example.pranay.nutrihome.fatsecret.Foods;
+package com.example.pranay.nutrihome.fatsecret;
 
+import android.content.Context;
+
+import com.example.pranay.nutrihome.AppGlobalState;
 import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
-import com.example.pranay.nutrihome.fatsecret.Method;
-import com.example.pranay.nutrihome.fatsecret.OAuthRequest;
+import com.example.pranay.nutrihome.R;
+
+import java.util.ArrayList;
 
 /**
  * Created by pranay on 20/9/16.
@@ -35,11 +39,40 @@ public abstract class CommonMethod<T> implements Method<T> {
     }
 
     public String sendRequest(MethodParam... params) {
+
         for(MethodParam p : params) {
+            request.addParameter(p.name, p.value);
+        }
+
+        for (MethodParam p:getFixedResourceParams()
+             ) {
             request.addParameter(p.name, p.value);
         }
         return request.sendRequest(true, true);
     }
+
+    private ArrayList<MethodParam> getFixedResourceParams()
+    {
+        Context context = AppGlobalState.getGlobalContext();
+
+        ArrayList<MethodParam> result = new ArrayList<MethodParam>();
+
+        result.add(new MethodParam(OAuthConstants.OAUTH_CONSUMER_KEY,
+                context.getResources().getString(R.string.consumerKey)));
+
+        result.add(new MethodParam(OAuthConstants.OAUTH_SHARED_KEY,
+                context.getResources().getString(R.string.sharedKey)));
+
+        result.add(new MethodParam(OAuthConstants.OAUTH_NONCE, "wtf"));
+
+        result.add(new MethodParam(OAuthConstants.OAUTH_URL,
+                context.getResources().getString(R.string.api_url)));
+
+        result.add(new MethodParam(FatSecretCommons.FORMAT, FatSecretCommons.FORMAT_JSON));
+
+        return result;
+    }
+
 
     public void addParameter(String param, String value)
     {

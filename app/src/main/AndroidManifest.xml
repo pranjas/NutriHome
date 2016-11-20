@@ -22,7 +22,9 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        android:name=".AppGlobalState"
+        >
         <activity android:name=".Search">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -32,6 +34,7 @@
         </activity>
         <activity
             android:name=".FoodSearchResult"
+            android:launchMode="singleTop"
             android:parentActivityName=".Search"></activity>
         <activity android:name=".FoodItemShow"
             android:parentActivityName=".FoodSearchResult"

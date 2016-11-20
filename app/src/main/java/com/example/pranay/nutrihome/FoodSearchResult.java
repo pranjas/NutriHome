@@ -21,13 +21,11 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
-import android.icu.util.Measure;
 import android.os.AsyncTask;
 import android.support.annotation.NonNull;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.LayoutDirection;
 import android.util.Pair;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -40,8 +38,6 @@ import android.widget.Button;
 import android.widget.HeaderViewListAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.ScrollView;
-import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
@@ -49,13 +45,9 @@ import com.example.pranay.nutrihome.fatsecret.FatSecretCommons;
 import com.example.pranay.nutrihome.fatsecret.Foods.Food;
 import com.example.pranay.nutrihome.fatsecret.Foods.FoodConstants;
 import com.example.pranay.nutrihome.fatsecret.Foods.FoodInfo;
-import com.example.pranay.nutrihome.fatsecret.Foods.MethodParam;
-import com.example.pranay.nutrihome.fatsecret.Method;
+import com.example.pranay.nutrihome.fatsecret.MethodParam;
 import com.example.pranay.nutrihome.fatsecret.Profile.Profile;
 
-import org.w3c.dom.Text;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -74,7 +66,7 @@ public class FoodSearchResult extends AppCompatActivity {
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         int searchPage = 0;
         setContentView(R.layout.activity_food_search_result);
@@ -86,8 +78,9 @@ public class FoodSearchResult extends AppCompatActivity {
             AppLogger.getInstance().debug("SavedInstance is null");
             Intent fromSearchActivity = getIntent();
             if (fromSearchActivity != null) {
-                currentSearchExpression = fromSearchActivity.getExtras().
-                                                    getString(IntentURI.SEARCH_FOOD);
+                currentSearchExpression = fromSearchActivity.getStringExtra(IntentURI.SEARCH_FOOD);
+                if (currentSearchExpression == null)
+                    currentSearchExpression = "";
                 currentSearchPage = fromSearchActivity.getIntExtra(IntentURI.SEARCH_FOOD_PAGE, -1);
             }
         }
@@ -113,6 +106,19 @@ public class FoodSearchResult extends AppCompatActivity {
         savedInstanceState.putInt(FatSecretCommons.PAGE_NUMBER, currentSearchPage);
     }
 
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstance)
+    {
+        super.onRestoreInstanceState(savedInstance);
+        AppLogger.getInstance().debug("OnRestore called....");
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        super.onDestroy();
+        AppLogger.getInstance().debug("Destroying parent activity");
+    }
 
 
     private class RequestReader extends AsyncTask<String, Integer, ArrayList<FoodInfo>> {
@@ -128,7 +134,6 @@ public class FoodSearchResult extends AppCompatActivity {
              * NEED TO ADD SEARCH_EXPRESSION and any other
              * parameters. This would be done in PRE-EXECUTE?
              */
-            mFoodParams.addAll(getFixedResourceParams());
             progressBar = ProgressDialog.show(appCompatActivity,
                     "Loading...", "Searching for " + appCompatActivity.currentSearchExpression,
                     true);
@@ -147,20 +152,11 @@ public class FoodSearchResult extends AppCompatActivity {
         private Profile getProfile()
         {
             if (mProfile == null) {
-                mProfile = Profile.createProfile("kumar.srivastava.pranay@gmail.com",
-                        appCompatActivity.getResources().getString(R.string.consumerKey)
-                        , appCompatActivity.getResources().getString(R.string.sharedKey),
-                        "wtf", appCompatActivity.getResources().getString(R.string.api_url),
-                        OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1
-                );
+                mProfile = Profile.createProfile("kumar.srivastava.pranay@gmail.com");
             }
 
             if (mProfile == null)
-                mProfile = Profile.getProfileFromServer("kumar.srivastava.pranay@gmail.com",
-                        appCompatActivity.getResources().getString(R.string.consumerKey)
-                        ,appCompatActivity.getResources().getString(R.string.sharedKey),
-                        "wtf", appCompatActivity.getResources().getString(R.string.api_url),
-                        OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1);
+                mProfile = Profile.getProfileFromServer("kumar.srivastava.pranay@gmail.com");
 
             return mProfile;
         }
@@ -288,23 +284,6 @@ public class FoodSearchResult extends AppCompatActivity {
             return null;
         }
 
-        private ArrayList<MethodParam> getFixedResourceParams()
-        {
-            ArrayList<MethodParam> result = new ArrayList<MethodParam>();
-
-            result.add(new MethodParam(OAuthConstants.OAUTH_CONSUMER_KEY,
-                    appCompatActivity.getResources().getString(R.string.consumerKey)));
-
-            result.add(new MethodParam(OAuthConstants.OAUTH_SHARED_KEY,
-                    appCompatActivity.getResources().getString(R.string.sharedKey)));
-
-            result.add(new MethodParam(OAuthConstants.OAUTH_NONCE, "wtf"));
-
-            result.add(new MethodParam(OAuthConstants.OAUTH_URL,
-                    appCompatActivity.getResources().getString(R.string.api_url)));
-
-            return result;
-        }
     }
 
     private class ListViewBtnHandler implements View.OnClickListener {

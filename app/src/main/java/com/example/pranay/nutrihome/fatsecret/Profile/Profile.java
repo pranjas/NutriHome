@@ -17,11 +17,15 @@ package com.example.pranay.nutrihome.fatsecret.Profile;
 import com.example.pranay.nutrihome.AppLogger;
 import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
 import com.example.pranay.nutrihome.R;
+import com.example.pranay.nutrihome.fatsecret.CommonMethod;
 import com.example.pranay.nutrihome.fatsecret.FatSecretCommons;
+import com.example.pranay.nutrihome.fatsecret.MethodParam;
 import com.example.pranay.nutrihome.fatsecret.OAuthRequest;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 /**
  * Created by pranay on 17/9/16.
@@ -33,7 +37,7 @@ public class Profile {
 
     private String userId;
 
-    private String  weightMeasure,
+    public String  weightMeasure,
                     heightMeasure,
                     lastWeightKG,
                     lastWeightDate,
@@ -41,105 +45,64 @@ public class Profile {
                     goalWeightKG,
                     heightInCM;
 
-    private static OAuthRequest request;
 
-
-    public boolean getUserInformation()
+    public boolean getUserInformation(MethodParam...params)
     {
-        request.modifyParameter(FatSecretCommons.METHOD, ProfileConstants.METHOD_PROFILE_GET);
-        request.modifyParameter(FatSecretCommons.FORMAT, FatSecretCommons.FORMAT_JSON);
-        request.getoAuthManager().setoAuthAccessKey(oAuthSecret);
-        request.getoAuthManager().setoAuthToken(oAuthToken);
-        JSONObject result = null;
-        try {
-            result = new JSONObject(request.sendRequest(true, true));
-
-            JSONObject profile = result.getJSONObject(ProfileConstants.JSON_OBJECT_NAME);
-
-            weightMeasure = profile.getString(ProfileConstants.JSON_KEY_WEIGHT_MEASURE).
-                                                        toLowerCase();
-
-            heightMeasure = profile.getString(ProfileConstants.JSON_KEY_HEIGHT_MEASURE).
-                                                        toLowerCase();
-
-            lastWeightKG = profile.getString(ProfileConstants.JSON_KEY_LAST_WEIGHT_KG).
-                                                        toLowerCase();
-
-            lastWeightDate = profile.getString(ProfileConstants.JSON_KEY_LAST_WEIGHT_DATE_INT).
-                                                        toLowerCase();
-
-            lastWeightComment = profile.optString(ProfileConstants.JSON_KEY_LAST_WEIGHT_COMMENT).
-                                                        toLowerCase();
-
-            goalWeightKG = profile.getString(ProfileConstants.JSON_KEY_GOAL_WEIGHT_KG).
-                                                        toLowerCase();
-
-            heightInCM = profile.getString(ProfileConstants.JSON_KEY_HEIGHT_CM).toLowerCase();
-
+        GetMethod method = new GetMethod(OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1, this);
+        ArrayList<Profile> result = method.parse(method.sendRequest(params));
+        if (result != null)
             return true;
 
-        } catch (JSONException e) {
-            AppLogger.getInstance().error(e.getMessage());
-        }
         return false;
     }
 
+    private static Profile getProfile(String userId, MethodParam...params)
+    {
+        GetAuthMethod method = new GetAuthMethod(OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1, userId);
+        ArrayList<Profile> result = method.parse(method.sendRequest(params));
+        if (result !=null)
+            return result.size() == 1? result.get(0) : null;
+
+        return  null;
+    }
+
+    private static Profile _createProfile(String userId, MethodParam...params)
+    {
+        CreateMethod method = new CreateMethod(OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1, userId);
+        ArrayList<Profile> result = method.parse(method.sendRequest(params));
+        if (result !=null)
+            return result.size() == 1? result.get(0) : null;
+
+        return  null;
+    }
+
+
+
     private static Profile getOrCreate(String method,
-                                String userId,
-                                String consumerKey, String sharedKey,
-                                String nonce, String url,
-                                OAuthConstants.OAuthProto proto
+                                String userId, MethodParam...params
                                 )
     {
-        if(request == null)
-            request = new OAuthRequest(consumerKey,sharedKey, nonce, url, proto);
-        request.clear();
+        if (method.equals(ProfileConstants.METHOD_PROFILE_GET_AUTH))
+            return getProfile(userId, params);
 
-        request.addParameter(FatSecretCommons.FORMAT, FatSecretCommons.FORMAT_JSON);
-        request.addParameter(ProfileConstants.USER_ID, userId);
-        request.addParameter(FatSecretCommons.METHOD, method);
+        else if (method.equals(ProfileConstants.METHOD_PROFILE_CREATE))
+            return _createProfile(userId, params);
 
-        JSONObject result = null;
-        try {
-            result = new JSONObject(request.sendRequest(true, true));
-
-            String auth_token = result.getJSONObject(ProfileConstants.JSON_OBJECT_NAME).
-                    getString(ProfileConstants.AUTH_TOKEN);
-
-            String auth_secret = result.getJSONObject(ProfileConstants.JSON_OBJECT_NAME).
-                    getString(ProfileConstants.AUTH_SECRET);
-
-            return new Profile(auth_token, auth_secret, userId);
-        } catch (JSONException e) {
-            try {
-                JSONObject error = result.getJSONObject("error");
-                AppLogger.getInstance().error(error.getString("code") + ": " +
-                                error.getString("message"));
-            } catch (JSONException e1) {
-                AppLogger.getInstance().error(e1.getMessage());
-            }
-        }
-        return null;
+        return  null;
     }
 
     public static Profile getProfileFromServer(String userId,
-                                               String consumerKey, String sharedKey,
-                                               String nonce, String url,
-                                               OAuthConstants.OAuthProto proto
+                                               MethodParam...params
                                             )
     {
-        return getOrCreate(ProfileConstants.METHOD_PROFILE_GET_AUTH, userId,
-                                consumerKey, sharedKey, nonce, url,proto);
+        return getOrCreate(ProfileConstants.METHOD_PROFILE_GET_AUTH, userId,params);
     }
 
     public static Profile createProfile(String userId,
-                                        String consumerKey, String sharedKey,
-                                        String nonce, String url,
-                                        OAuthConstants.OAuthProto proto
+                                        MethodParam...params
                                         )
     {
-        return getOrCreate(ProfileConstants.METHOD_PROFILE_CREATE, userId,
-                consumerKey, sharedKey, nonce, url,proto);
+        return getOrCreate(ProfileConstants.METHOD_PROFILE_CREATE, userId, params);
     }
 
     public Profile(String token, String secret, String userId)
@@ -149,7 +112,7 @@ public class Profile {
         this.userId = userId;
     }
 
-    public String getUserId()
+     public String getUserId()
     {
         return userId;
     }

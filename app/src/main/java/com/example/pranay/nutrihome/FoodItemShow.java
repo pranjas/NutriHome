@@ -14,7 +14,9 @@
 
 package com.example.pranay.nutrihome;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v4.app.NavUtils;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.AppCompatActivity;
@@ -22,6 +24,7 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
 import com.example.pranay.nutrihome.fatsecret.Foods.FoodInfo;
 
 public class FoodItemShow extends AppCompatActivity {
@@ -29,6 +32,40 @@ public class FoodItemShow extends AppCompatActivity {
     private FoodInfo foodItem;
     private String parentSearchExpression;
     private int parentSearchPage;
+
+    private ProgressDialog progressDialog;
+
+
+    private class FoodItemInitializer extends AsyncTask<Integer, String, String>
+    {
+
+        @Override
+        protected void onPreExecute()
+        {
+            if (progressDialog == null)
+                progressDialog = ProgressDialog.show(FoodItemShow.this,
+                        "Getting Food Info...", foodItem.food_name, true);
+            else
+                progressDialog.show();
+        }
+
+        @Override
+        protected  void onPostExecute(String result)
+        {
+            progressDialog.dismiss();
+            showFoodItem();
+            AppLogger.getInstance().debug(foodItem.toString());
+        }
+
+        /*
+         * Return any n
+         */
+        @Override
+        protected String doInBackground(Integer... params) {
+            foodItem.initliaizeServings(OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1);
+            return "";
+        }
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,17 +75,26 @@ public class FoodItemShow extends AppCompatActivity {
             foodItem = parentIntent.getParcelableExtra(IntentURI.FOOD_ITEM_SHOW);
             parentSearchExpression = parentIntent.getStringExtra(IntentURI.SEARCH_FOOD);
             parentSearchPage = parentIntent.getIntExtra(IntentURI.SEARCH_FOOD_PAGE, 0);
-            showFoodItem();
+
+            /*
+             * Initialize the food item in a seperate
+             * thread to avoid main thread exceptions.
+             */
+            new FoodItemInitializer().execute();
         }
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
     }
 
     public boolean onOptionsItemSelected(MenuItem menuItem)
     {
+
         switch (menuItem.getItemId()) {
             case android.R.id.home:
                 Intent upIntent = NavUtils.getParentActivityIntent(this);
                 upIntent.putExtra(IntentURI.SEARCH_FOOD, parentSearchExpression);
                 upIntent.putExtra(IntentURI.SEARCH_FOOD_PAGE, parentSearchPage);
+
                 if (NavUtils.shouldUpRecreateTask(this, upIntent)) {
                     // This activity is NOT part of this app's task, so create a new task
                     // when navigating up, with a synthesized back stack.
@@ -65,7 +111,6 @@ public class FoodItemShow extends AppCompatActivity {
                 return true;
         }
         return super.onOptionsItemSelected(menuItem);
-
     }
 
     private void showFoodItem()
@@ -75,4 +120,6 @@ public class FoodItemShow extends AppCompatActivity {
         txtName.setText(foodItem.food_name);
         txtNutritionInfo.setText(foodItem.food_description);
     }
+
+
 }

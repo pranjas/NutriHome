@@ -14,18 +14,11 @@
 
 package com.example.pranay.nutrihome.fatsecret.Foods;
 
-import com.example.pranay.nutrihome.AppLogger;
 import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
-import com.example.pranay.nutrihome.OAuthCommon.OAuthManager;
 import com.example.pranay.nutrihome.fatsecret.FatSecretCommons;
-import com.example.pranay.nutrihome.fatsecret.OAuthRequest;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.example.pranay.nutrihome.fatsecret.MethodParam;
 
 import java.util.ArrayList;
-import java.util.StringTokenizer;
 
 /**
  * Created by pranay on 17/9/16.
@@ -38,7 +31,6 @@ public class Food {
 
         SearchMethod searchMethod = new SearchMethod(proto);
         searchMethod.addParameter(FatSecretCommons.METHOD, FoodConstants.METHOD_SEARCH);
-        searchMethod.addParameter(FatSecretCommons.FORMAT, FatSecretCommons.FORMAT_JSON);
         String jsonOutput = searchMethod.sendRequest(params);
         return searchMethod.parse(jsonOutput);
     }

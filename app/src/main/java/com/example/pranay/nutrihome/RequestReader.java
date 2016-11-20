@@ -14,20 +14,15 @@
 
 package com.example.pranay.nutrihome;
 
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 
 import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
-import com.example.pranay.nutrihome.fatsecret.FatSecretCommons;
 import com.example.pranay.nutrihome.fatsecret.Foods.Food;
 import com.example.pranay.nutrihome.fatsecret.Foods.FoodConstants;
 import com.example.pranay.nutrihome.fatsecret.Foods.FoodInfo;
-import com.example.pranay.nutrihome.fatsecret.Foods.MethodParam;
-import com.example.pranay.nutrihome.fatsecret.Method;
-import com.example.pranay.nutrihome.fatsecret.OAuthRequest;
+import com.example.pranay.nutrihome.fatsecret.MethodParam;
 import com.example.pranay.nutrihome.fatsecret.Profile.Profile;
-import com.example.pranay.nutrihome.fatsecret.Profile.ProfileConstants;
 
 import java.util.ArrayList;
 
@@ -50,19 +45,10 @@ public class RequestReader extends AsyncTask
     @Override
     protected Long doInBackground(String... params) {
         try {
-            Profile p = Profile.createProfile( "kumar.srivastava.pranay@gmail.com",
-                    appCompatActivity.getResources().getString(R.string.consumerKey)
-                    ,appCompatActivity.getResources().getString(R.string.sharedKey),
-                    "wtf", appCompatActivity.getResources().getString(R.string.api_url),
-                    OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1
-            );
+            Profile p = Profile.createProfile( "kumar.srivastava.pranay@gmail.com");
 
             if (p == null)
-                p = Profile.getProfileFromServer("kumar.srivastava.pranay@gmail.com",
-                        appCompatActivity.getResources().getString(R.string.consumerKey)
-                        ,appCompatActivity.getResources().getString(R.string.sharedKey),
-                        "wtf", appCompatActivity.getResources().getString(R.string.api_url),
-                        OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1);
+                p = Profile.getProfileFromServer("kumar.srivastava.pranay@gmail.com");
 
             /*
              * NEED TO ADD SEARCH_EXPRESSION and any other
@@ -72,7 +58,6 @@ public class RequestReader extends AsyncTask
             foodParams.add(new MethodParam(OAuthConstants.OAUTH_ACCESS_KEY, p.getoAuthSecret()));
             foodParams.add(new MethodParam(OAuthConstants.OAUTH_AUTH_TOKEN,  p.getoAuthToken()));
             foodParams.add(new MethodParam(FoodConstants.SEARCH_EXPRESSION, params[0]));
-            foodParams.addAll(getFixedResourceParams());
 
             ArrayList<FoodInfo> foods = Food.search(OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1,
                     foodParams.toArray(new MethodParam[0]));
@@ -90,23 +75,5 @@ public class RequestReader extends AsyncTask
             e.printStackTrace();
         }
         return 0L;
-    }
-
-    private ArrayList<MethodParam> getFixedResourceParams()
-    {
-        ArrayList<MethodParam> result = new ArrayList<MethodParam>();
-
-        result.add(new MethodParam(OAuthConstants.OAUTH_CONSUMER_KEY,
-                appCompatActivity.getResources().getString(R.string.consumerKey)));
-
-        result.add(new MethodParam(OAuthConstants.OAUTH_SHARED_KEY,
-                appCompatActivity.getResources().getString(R.string.sharedKey)));
-
-        result.add(new MethodParam(OAuthConstants.OAUTH_NONCE, "wtf"));
-
-        result.add(new MethodParam(OAuthConstants.OAUTH_URL,
-                appCompatActivity.getResources().getString(R.string.api_url)));
-
-        return result;
     }
 }
