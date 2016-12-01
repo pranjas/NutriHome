@@ -53,9 +53,9 @@ public class FoodServing implements Parcelable{
         POLYUNSATURATED_FAT,
         MONOUNSATURATED_FAT,
         TRANS_FAT,
-        CHOLESTROL,
+        CHOLESTEROL, /*This is the way it is spelled in fa-secret json response*/
         SODIUM,
-        POTTASIUM,
+        POTASSIUM, /*This is the way it is spelled in fa-secret json response*/
         SUGAR,
         VITAMIN_A,
         VITAMIN_C,

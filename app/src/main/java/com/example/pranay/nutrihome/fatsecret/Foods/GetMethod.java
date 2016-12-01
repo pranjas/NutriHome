@@ -31,20 +31,69 @@ public class GetMethod extends CommonMethod<FoodServing> {
 
     private String food_id;
 
+    static {
+        FoodServing.FoodServingField[] fields =
+                FoodServing.FoodServingField.values();
+
+        FoodServing.FoodServingNutrient[] nutrients =
+                FoodServing.FoodServingNutrient.values();
+    }
     public GetMethod(OAuthConstants.OAuthProto proto, String food_id)
     {
         super(proto);
         this.food_id = food_id;
         addParameter(FoodConstants.FOOD_ID, food_id);
     }
+
+    private FoodServing __GetServing(JSONObject serving)
+    {
+        FoodServing fserv = new FoodServing(food_id);
+
+        /*
+         * Instead of doing this by hand,
+         * better to use the names of fields instead.
+         * Given the fact that the number of fields are not
+         * huge, but typing them all is a real pain in
+         * the ass....
+         */
+
+        /*
+         * Map all available field names first.
+         */
+        for (FoodServing.FoodServingField field: FoodServing.FoodServingField.values()
+                ) {
+            fserv.setFoodServingParameter(field, serving.optString(field.name().toLowerCase()));
+        }
+
+        /*
+         * Map all available nurients next.
+         */
+
+        for (FoodServing.FoodServingNutrient nutrient: FoodServing.FoodServingNutrient.values()
+                ) {
+            fserv.setNutrient(nutrient, serving.optString(nutrient.name().toLowerCase()));
+        }
+
+        return fserv;
+    }
+
     @Override
     public ArrayList<FoodServing> parse(String jsonInput) {
         ArrayList<FoodServing> result = new ArrayList<>();
         try {
             JSONObject food = new JSONObject(jsonInput);
-            JSONArray allServings = food.getJSONObject(FoodConstants.JSON_ARRAY_NAME).
-                    getJSONObject(FoodConstants.JSON_SERVINGS_NAME).
-                    getJSONArray(FoodConstants.JSON_SERVING_NAME);
+
+            JSONArray allServings = null;
+            JSONObject singleServing = null;
+
+            Object servingObject = food.getJSONObject(FoodConstants.JSON_ARRAY_NAME).
+                    getJSONObject(FoodConstants.JSON_SERVINGS_NAME)
+                    .get(FoodConstants.JSON_SERVING_NAME);
+
+            if (servingObject instanceof JSONArray)
+                allServings = (JSONArray)servingObject;
+            else
+                singleServing = (JSONObject)servingObject;
 
             /*
              * We really don't need any of these,
@@ -52,48 +101,20 @@ public class GetMethod extends CommonMethod<FoodServing> {
              * result anyway, which is why the blocked code.
              */
 
+            if (allServings !=null)
             {
-                FoodServing.FoodServingField[] fields =
-                        FoodServing.FoodServingField.values();
-                FoodServing.FoodServingNutrient[] nutrients =
-                        FoodServing.FoodServingNutrient.values();
                 for (int i = 0; i < allServings.length(); i++) {
                     JSONObject serving = allServings.getJSONObject(i);
-                    FoodServing fserv = new FoodServing(food_id);
-
-                    /*
-                     * Instead of doing this by hand,
-                     * better to use the names of fields instead.
-                     * Given the fact that the number of fields are not
-                     * huge, but typing them all is a real pain in
-                     * the ass....
-                     */
-
-                    /*
-                     * Map all available field names first.
-                     */
-                    for (FoodServing.FoodServingField field: FoodServing.FoodServingField.values()
-                         ) {
-                        fserv.setFoodServingParameter(field, serving.optString(field.name().toLowerCase()));
-                    }
-
-                    /*
-                     * Map all available nurients next.
-                     */
-
-                    for (FoodServing.FoodServingNutrient nutrient: FoodServing.FoodServingNutrient.values()
-                         ) {
-                        fserv.setNutrient(nutrient, serving.optString(nutrient.name().toLowerCase()));
-                    }
-
-                    /*
-                     * OK add this sucker to result set.
-                     */
-
-                    result.add(fserv);
+                    result.add(__GetServing(serving));
                 }
+            }else if (singleServing != null)
+            {
+                result.add(__GetServing(singleServing));
             }
-
+            else {
+                AppLogger.getInstance().error("BUG!!");
+                throw new RuntimeException("Invalid JSON Object state");
+            }
         } catch (JSONException e) {
             AppLogger.getInstance().error(e.getMessage());
             result.clear();

@@ -47,6 +47,13 @@ public class FoodInfo implements Parcelable {
 
     protected ArrayList<FoodServing> servings;
 
+    public FoodServing[] getServings()
+    {
+        if( servings != null)
+            return servings.toArray(new FoodServing[0]);
+        return null;
+    }
+
     @Override
     public int describeContents()
     {
