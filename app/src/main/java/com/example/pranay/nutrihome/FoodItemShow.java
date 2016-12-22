@@ -38,6 +38,7 @@ import android.widget.TableLayout;
 import android.widget.TextView;
 
 import com.example.pranay.nutrihome.OAuthCommon.OAuthConstants;
+import com.example.pranay.nutrihome.fatsecret.Foods.AddDeleteFavoriteMethod;
 import com.example.pranay.nutrihome.fatsecret.Foods.FoodInfo;
 import com.example.pranay.nutrihome.fatsecret.Foods.FoodServing;
 
@@ -111,25 +112,8 @@ public class FoodItemShow extends AppCompatActivity {
 
                 nutritionValue.setText(val);
 
-                /*
-                if (Build.VERSION.SDK_INT >= 23) {
-                    nutritionLabel.setTextColor(
-                            getResources().getColor(R.color.textColorWhite
-                                    , this.getTheme()));
-
-                    nutritionValue.setTextColor(getResources().getColor(R.color.textColorWhite
-                            , this.getTheme()));
-                } else {
-                    nutritionLabel.setTextColor(getResources().getColor(R.color.textColorWhite));
-                    nutritionValue.setTextColor(getResources().getColor(R.color.textColorWhite));
-                }
-                */
                 nutritionLabel.setText(nutrient.name());
                 tblLayout.setLayoutParams(nutritionalInfoParam);
-                /*
-                nutritionLabel.setLayoutParams(nutrientLayoutParam);
-                nutritionValue.setLayoutParams(nutrientLayoutParam);
-                */
                 linearLayout.addView(tblLayout);
             }
         }
@@ -160,7 +144,7 @@ public class FoodItemShow extends AppCompatActivity {
              * happen though. However to be on
              * safer side, better to check rather
              * than have application crash.
-             * 
+             *
              */
             if (allServings == null) {
                 if (servingArrayAdapter != null) {
@@ -191,7 +175,8 @@ public class FoodItemShow extends AppCompatActivity {
             }
             else {
                 servingArrayAdapter = new
-                        ArrayAdapter<String>(getApplicationContext(),
+                        ArrayAdapter<String>(
+                        FoodItemShow.this,
                         android.R.layout.simple_spinner_item,
                         spinnerList);
 
@@ -230,6 +215,12 @@ public class FoodItemShow extends AppCompatActivity {
         @Override
         protected String doInBackground(Integer... params) {
             foodItem.initliaizeServings(OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1);
+
+            if (AppGlobalState.getUserProfile() != null) {
+                new AddDeleteFavoriteMethod(OAuthConstants.OAuthProto.O_AUTH_PROTO_VER1)
+                        .addFood(AppGlobalState.getUserProfile(), foodItem.food_id);
+            }
+
             return "";
         }
     }
@@ -288,5 +279,4 @@ public class FoodItemShow extends AppCompatActivity {
         txtName.setText(foodItem.food_name);
         txtNutritionInfo.setText(foodItem.food_description);
     }
-
 }

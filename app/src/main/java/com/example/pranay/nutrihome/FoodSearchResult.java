@@ -275,6 +275,7 @@ public class FoodSearchResult extends AppCompatActivity {
                     if (!mProfile.getUserInformation())
                         AppLogger.getInstance().debug("User information not found");
                     AppLogger.getInstance().debug(mProfile.toString());
+                    AppGlobalState.setUserProfile(mProfile);
                 }
                 return foods;
 

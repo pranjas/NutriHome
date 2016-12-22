@@ -65,7 +65,8 @@ public class AddDeleteFavoriteMethod extends CommonMethod<FoodInfo> {
         else
             addParameter(FatSecretCommons.METHOD, FoodConstants.METHOD_ADD_FAVOURITE);
 
-        addParameter(FatSecretCommons.OAUTH_TOKEN, profile.getoAuthToken());
+        addParameter(OAuthConstants.OAUTH_AUTH_TOKEN, profile.getoAuthToken());
+        addParameter(OAuthConstants.OAUTH_ACCESS_KEY, profile.getoAuthSecret());
         addParameter(FOOD_ID, foodID);
         addParameter(FatSecretCommons.FORMAT, FatSecretCommons.FORMAT_JSON);
         String reply = sendRequest();

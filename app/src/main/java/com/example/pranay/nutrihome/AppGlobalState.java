@@ -17,12 +17,16 @@ package com.example.pranay.nutrihome;
 import android.app.Application;
 import android.content.Context;
 
+import com.example.pranay.nutrihome.fatsecret.Profile.Profile;
+
 /**
  * Created by pranay on 20/11/16.
  */
 public class AppGlobalState extends Application {
 
     private static Context globalContext;
+
+    private static Profile globalProfile;
 
     @Override
     public void onCreate()
@@ -34,5 +38,15 @@ public class AppGlobalState extends Application {
     public static Context getGlobalContext()
     {
         return globalContext;
+    }
+
+    public static Profile getUserProfile()
+    {
+        return globalProfile;
+    }
+
+    public static void setUserProfile(Profile profile)
+    {
+        globalProfile = profile;
     }
 }
